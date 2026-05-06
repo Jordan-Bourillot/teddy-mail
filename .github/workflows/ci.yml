@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint and test (Node)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: TypeScript strict typecheck
+        run: npx tsc --noEmit
+
+      - name: Vitest
+        run: npm test
+
+  rust:
+    name: Cargo check (rust-core)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust-core
+
+      - name: Install system deps for sqlcipher
+        run: sudo apt-get update && sudo apt-get install -y libsqlcipher-dev
+
+      - run: cd rust-core && cargo check --all-targets
+
+      - run: cd rust-core && cargo test

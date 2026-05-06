@@ -5,6 +5,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning [Se
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-05-06
+
+### Added
+- **Profile editor** with per-account photo upload (JPG/PNG/WebP, compressed to 320px / 250KB max), display name, accent color, and signature editor with live preview.
+- **Auto-update**: `tauri-plugin-updater` integrated. Desktop app checks GitHub releases every 6 h, shows a non-blocking banner. Install + restart in two clicks. Minisign-style signature verification (public key embedded, private key never shipped).
+- `teddy-mail-accounts-v1` localStorage key persists account customizations across reloads.
+- Composer footer warns when active account has no signature configured.
+- Updater signing keypair generated and added to GitHub Secrets for CI signing.
+- `latest.json` updater manifest published with each release.
+
+### Changed
+- Account list in sidebar now shows the user's avatar and is clickable (opens the Accounts panel).
+- Avatar component supports photo URLs (data URL or http) with initials fallback.
+- Release workflow signs all updater artifacts (`.exe`, `.msi`, `.dmg`, `.AppImage`) and generates `latest.json`.
+
 ## [0.1.2] — 2026-05-06
 
 ### Changed

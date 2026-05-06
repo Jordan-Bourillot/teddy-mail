@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import type {
   Account,
+  AccountId,
   Category,
   Draft,
   Folder,
@@ -48,6 +49,7 @@ const defaultViews: SavedView[] = [
 ];
 
 const PREFS_KEY = 'teddy-mail-prefs-v1';
+const ACCOUNTS_KEY = 'teddy-mail-accounts-v1';
 
 function loadPrefs(): UserPreferences {
   try {
@@ -65,6 +67,29 @@ function savePrefs(p: UserPreferences): void {
   } catch {
     // ignore quota errors, prefs revert to defaults next session
   }
+}
+
+function loadAccountOverrides(): Record<string, Partial<Account>> {
+  try {
+    const raw = localStorage.getItem(ACCOUNTS_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) as Record<string, Partial<Account>>;
+  } catch {
+    return {};
+  }
+}
+
+function saveAccountOverrides(map: Record<string, Partial<Account>>): void {
+  try {
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(map));
+  } catch {
+    // Quota exceeded (large photo) — degrade silently.
+  }
+}
+
+function applyOverrides(base: Account[]): Account[] {
+  const overrides = loadAccountOverrides();
+  return base.map((a) => ({ ...a, ...(overrides[a.id] ?? {}) }));
 }
 
 export interface AppState {
@@ -95,6 +120,7 @@ export interface AppState {
 
   // Actions: data
   addAccount: (account: Account) => void;
+  updateAccount: (id: AccountId, patch: Partial<Account>) => void;
   selectFolder: (id: FolderId | 'unified-inbox') => void;
   selectThread: (id: ThreadId | null) => void;
   toggleThreadCheck: (id: ThreadId) => void;
@@ -142,7 +168,7 @@ export interface AppState {
 }
 
 export const useStore = create<AppState>((set, get) => ({
-  accounts: mockAccounts,
+  accounts: applyOverrides(mockAccounts),
   folders: mockFolders,
   labels: mockLabels,
   mails: mockMails,
@@ -168,6 +194,10 @@ export const useStore = create<AppState>((set, get) => ({
     // Refuse silent duplicates so multiple onboardings don't pollute the list.
     if (get().accounts.some((a) => a.id === account.id || a.email === account.email)) return;
     const accounts = [...get().accounts, account];
+    // Persist as full override so the account survives reload.
+    const overrides = loadAccountOverrides();
+    overrides[account.id] = account;
+    saveAccountOverrides(overrides);
     const newFolders: Folder[] = [
       { id: `inbox_${account.id}`, accountId: account.id, name: 'Inbox', type: 'inbox', unreadCount: 0 },
       { id: `sent_${account.id}`, accountId: account.id, name: 'Envoyés', type: 'sent', unreadCount: 0 },
@@ -176,6 +206,14 @@ export const useStore = create<AppState>((set, get) => ({
       { id: `trash_${account.id}`, accountId: account.id, name: 'Corbeille', type: 'trash', unreadCount: 0 },
     ];
     set({ accounts, folders: [...get().folders, ...newFolders] });
+  },
+
+  updateAccount: (id, patch) => {
+    const accounts = get().accounts.map((a) => (a.id === id ? { ...a, ...patch } : a));
+    set({ accounts });
+    const overrides = loadAccountOverrides();
+    overrides[id] = { ...(overrides[id] ?? {}), ...patch };
+    saveAccountOverrides(overrides);
   },
 
   selectFolder: (id) =>

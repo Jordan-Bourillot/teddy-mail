@@ -4,9 +4,30 @@ interface AvatarProps {
   name?: string;
   email: string;
   size?: number;
+  /**
+   * Optional photo URL (data URL or http). If provided, the photo is shown
+   * instead of the initials. Falls back to initials on load failure.
+   */
+  photoUrl?: string;
 }
 
-export function Avatar({ name, email, size = 36 }: AvatarProps) {
+export function Avatar({ name, email, size = 36, photoUrl }: AvatarProps) {
+  if (photoUrl) {
+    return (
+      <img
+        src={photoUrl}
+        alt={name ?? email}
+        title={name ?? email}
+        className="rounded-full object-cover shrink-0 select-none"
+        style={{ width: size, height: size }}
+        // If the image fails to load, the surrounding container shows nothing;
+        // the consumer can re-render without photoUrl on error.
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.display = 'none';
+        }}
+      />
+    );
+  }
   const bg = avatarColor(email);
   return (
     <div

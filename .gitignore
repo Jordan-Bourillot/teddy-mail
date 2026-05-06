@@ -25,6 +25,11 @@ src/**/*.js.map
 src/**/*.d.ts
 !src/**/*.test.ts.snap
 
+# Updater manifest is generated per release, only kept for the current build
+latest.json
+*_build*.log
+*_build.log
+
 # Local
 *.db
 *.db-journal

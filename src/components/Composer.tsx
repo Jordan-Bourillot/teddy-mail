@@ -110,9 +110,14 @@ export function Composer() {
         placeholder="Écris ton message…"
       />
 
-      {account?.signature && (
+      {account?.signature?.trim() && (
         <div className="px-4 py-2 border-t border-border text-xs text-muted whitespace-pre-line">
           {account.signature}
+        </div>
+      )}
+      {!account?.signature?.trim() && (
+        <div className="px-4 py-2 border-t border-border text-xs text-muted/70">
+          Pas de signature pour ce compte. <span className="italic">Sidebar → clique sur l'email du compte → Signature.</span>
         </div>
       )}
 

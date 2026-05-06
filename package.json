@@ -1,7 +1,7 @@
 {
   "name": "teddy-mail",
   "private": true,
-  "version": "0.1.2",
+  "version": "0.2.0",
   "type": "module",
   "description": "Teddy Mail - calm, sovereign, customizable mail client",
   "scripts": {
@@ -18,7 +18,9 @@
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-dialog": "^2.0.0",
+    "@tauri-apps/plugin-process": "^2.0.0",
     "@tauri-apps/plugin-shell": "^2.0.0",
+    "@tauri-apps/plugin-updater": "^2.0.0",
     "date-fns": "^4.1.0",
     "dompurify": "^3.2.0",
     "fuse.js": "^7.0.0",

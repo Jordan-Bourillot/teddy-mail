@@ -24,6 +24,8 @@ export interface Account {
   protocol: 'imap' | 'jmap';
   color: string; // hex, used as accent for the account
   signature: string;
+  /** Base64 data URL of the user's profile photo, optional. */
+  photoUrl?: string | undefined;
 }
 
 export interface Address {

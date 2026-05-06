@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { AddAccount } from './AddAccount';
 import { Insights } from './Insights';
+import { AccountsPanel } from './AccountsPanel';
+import { Avatar } from './Avatar';
 
 export function Sidebar() {
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
+  const [showAccounts, setShowAccounts] = useState(false);
   const accounts = useStore((s) => s.accounts);
   const folders = useStore((s) => s.folders);
   const savedViews = useStore((s) => s.savedViews);
@@ -79,10 +82,23 @@ export function Sidebar() {
 
         {accounts.map((a) => (
           <div key={a.id} className="mt-4">
-            <SidebarSection
-              label={a.email}
-              swatch={a.color}
-            />
+            <button
+              type="button"
+              onClick={() => setShowAccounts(true)}
+              className="w-full flex items-center gap-2 px-2 mb-1 group hover:bg-surface-2 rounded py-1 transition"
+              title="Modifier le profil et la signature"
+            >
+              <Avatar
+                name={a.displayName}
+                email={a.email}
+                {...(a.photoUrl ? { photoUrl: a.photoUrl } : {})}
+                size={18}
+              />
+              <span className="flex-1 min-w-0 text-[11px] uppercase tracking-wider text-muted truncate text-left group-hover:text-text">
+                {a.email}
+              </span>
+              <span className="text-[11px] text-muted opacity-0 group-hover:opacity-100">⚙</span>
+            </button>
             {folders
               .filter((f) => f.accountId === a.id)
               .map((f) => (
@@ -108,6 +124,7 @@ export function Sidebar() {
 
       {showAddAccount && <AddAccount onClose={() => setShowAddAccount(false)} />}
       {showInsights && <Insights onClose={() => setShowInsights(false)} />}
+      {showAccounts && <AccountsPanel onClose={() => setShowAccounts(false)} />}
 
       <div className="p-3 border-t border-border text-xs text-muted">
         <div className="flex items-center gap-2">

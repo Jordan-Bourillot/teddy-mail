@@ -16,6 +16,14 @@ Cargo.lock
 # Tauri
 src-tauri/target/
 src-tauri/Cargo.lock
+src-tauri/gen/
+
+# TypeScript build outputs (.js next to .ts when tsc runs)
+tsconfig.tsbuildinfo
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+!src/**/*.test.ts.snap
 
 # Local
 *.db

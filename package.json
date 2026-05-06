@@ -6,7 +6,7 @@
   "description": "Pite Lafe Mail - calm, sovereign, customizable mail client",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

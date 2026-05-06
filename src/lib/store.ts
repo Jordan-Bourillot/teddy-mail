@@ -52,6 +52,7 @@ const defaultViews: SavedView[] = [
 
 const PREFS_KEY = 'teddy-mail-prefs-v1';
 const ACCOUNTS_KEY = 'teddy-mail-accounts-v1';
+const DRAFTS_KEY = 'teddy-mail-drafts-v1';
 
 function loadPrefs(): UserPreferences {
   try {
@@ -92,6 +93,45 @@ function saveAccountOverrides(map: Record<string, Partial<Account>>): void {
 function applyOverrides(base: Account[]): Account[] {
   const overrides = loadAccountOverrides();
   return base.map((a) => ({ ...a, ...(overrides[a.id] ?? {}) }));
+}
+
+function loadDrafts(): Draft[] {
+  try {
+    const raw = localStorage.getItem(DRAFTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as Draft[];
+    // Drop attachment data URLs from previous sessions to avoid quota bloat;
+    // file content was already gone (in-memory only). Keep filename + size.
+    return Array.isArray(parsed)
+      ? parsed.map((d) => ({
+          ...d,
+          attachments: (d.attachments ?? []).map((a) => {
+            const { dataUrl: _omit, ...rest } = a;
+            void _omit;
+            return rest;
+          }),
+        }))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveDrafts(drafts: Draft[]): void {
+  try {
+    // Strip attachment data URLs before persistence — they were in-memory only.
+    const slim = drafts.map((d) => ({
+      ...d,
+      attachments: d.attachments.map((a) => {
+        const { dataUrl: _omit, ...rest } = a;
+        void _omit;
+        return rest;
+      }),
+    }));
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(slim));
+  } catch {
+    // Quota exceeded — fail silently, drafts stay in memory only.
+  }
 }
 
 export interface AppState {
@@ -155,6 +195,8 @@ export interface AppState {
   // Actions: compose
   openCompose: (replyTo?: Mail) => void;
   closeCompose: () => void;
+  resumeDraft: (draftId: string) => void;
+  deleteDraft: (draftId: string) => void;
   updateDraft: (patch: Partial<Draft>) => void;
   addAttachment: (a: import('@/types').AttachmentDraft) => void;
   removeAttachment: (id: string) => void;
@@ -186,7 +228,7 @@ export const useStore = create<AppState>((set, get) => ({
   labels: mockLabels,
   mails: mockMails,
   threads: buildThreads(mockMails),
-  drafts: [],
+  drafts: loadDrafts(),
   pendingSends: [],
 
   selectedFolderId: 'unified-inbox',
@@ -422,9 +464,11 @@ export const useStore = create<AppState>((set, get) => ({
 
   closeCompose: () => {
     const draft = get().composeDraft;
-    if (draft && (draft.subject.trim() || draft.body.trim())) {
+    if (draft && (draft.subject.trim() || draft.body.trim() || draft.to.length > 0 || draft.attachments.length > 0)) {
       const drafts = [draft, ...get().drafts.filter((d) => d.id !== draft.id)];
       set({ drafts });
+      saveDrafts(drafts);
+      get().showToast('Brouillon enregistré');
     }
     set({ composeOpen: false, composeDraft: null });
   },
@@ -433,6 +477,22 @@ export const useStore = create<AppState>((set, get) => ({
     const cur = get().composeDraft;
     if (!cur) return;
     set({ composeDraft: { ...cur, ...patch, updatedAt: new Date().toISOString() } });
+  },
+
+  resumeDraft: (draftId) => {
+    const d = get().drafts.find((x) => x.id === draftId);
+    if (!d) return;
+    // Pull it out of drafts (will be re-saved on next close if still has content)
+    const drafts = get().drafts.filter((x) => x.id !== draftId);
+    set({ drafts, composeOpen: true, composeDraft: d });
+    saveDrafts(drafts);
+  },
+
+  deleteDraft: (draftId) => {
+    const drafts = get().drafts.filter((d) => d.id !== draftId);
+    set({ drafts });
+    saveDrafts(drafts);
+    get().showToast('Brouillon supprimé');
   },
 
   addAttachment: (a) => {

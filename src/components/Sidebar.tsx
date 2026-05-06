@@ -3,12 +3,15 @@ import { useStore } from '@/lib/store';
 import { AddAccount } from './AddAccount';
 import { Insights } from './Insights';
 import { AccountsPanel } from './AccountsPanel';
+import { DraftsPanel } from './DraftsPanel';
 import { Avatar } from './Avatar';
 
 export function Sidebar() {
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
   const [showAccounts, setShowAccounts] = useState(false);
+  const [showDrafts, setShowDrafts] = useState(false);
+  const draftsCount = useStore((s) => s.drafts.length);
   const accounts = useStore((s) => s.accounts);
   const folders = useStore((s) => s.folders);
   const savedViews = useStore((s) => s.savedViews);
@@ -61,6 +64,12 @@ export function Sidebar() {
           count={pendingSnoozed || undefined}
           active={false}
           onClick={() => setSearch('is:snoozed')}
+        />
+        <SidebarItem
+          label="Brouillons"
+          count={draftsCount || undefined}
+          active={false}
+          onClick={() => setShowDrafts(true)}
         />
         <SidebarItem
           label="Insights"
@@ -125,6 +134,7 @@ export function Sidebar() {
       {showAddAccount && <AddAccount onClose={() => setShowAddAccount(false)} />}
       {showInsights && <Insights onClose={() => setShowInsights(false)} />}
       {showAccounts && <AccountsPanel onClose={() => setShowAccounts(false)} />}
+      {showDrafts && <DraftsPanel onClose={() => setShowDrafts(false)} />}
 
       <div className="p-3 border-t border-border text-xs text-muted">
         <div className="flex items-center gap-2">

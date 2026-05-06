@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { themeOptions, densityOptions } from '@/lib/themes';
 import { playSound } from '@/lib/sounds';
+import { TemplatesPanel } from './TemplatesPanel';
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
@@ -22,6 +23,8 @@ export function SettingsButton() {
 function SettingsPanel({ onClose }: { onClose: () => void }) {
   const prefs = useStore((s) => s.prefs);
   const update = useStore((s) => s.updatePrefs);
+  const templates = useStore((s) => s.templates);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   return (
     <div
@@ -153,6 +156,20 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
             </Row>
           </Section>
 
+          <Section title="Modèles de mail">
+            <Row label="Réponses pré-écrites">
+              <button
+                onClick={() => setShowTemplates(true)}
+                className="px-3 py-1.5 text-sm rounded border border-border hover:bg-surface-2 transition"
+              >
+                Gérer ({templates.length})
+              </button>
+              <span className="ml-3 text-xs text-muted">
+                Insertion rapide via <span className="kbd">⌘/</span> dans le compositeur
+              </span>
+            </Row>
+          </Section>
+
           <Section title="Mouvement et son">
             <Row label="Animations">
               <select
@@ -194,6 +211,7 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
           </Section>
         </div>
       </div>
+      {showTemplates && <TemplatesPanel onClose={() => setShowTemplates(false)} />}
     </div>
   );
 }

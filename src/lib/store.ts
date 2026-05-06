@@ -15,6 +15,7 @@ import type {
   MailId,
   PendingSend,
   SavedView,
+  Template,
   Thread,
   ThreadId,
   UserPreferences,
@@ -25,6 +26,7 @@ import { searchMails } from './search';
 import { applyTheme } from './themes';
 import { playSound } from './sounds';
 import { scheduleSend, cancel as cancelSend, listPending } from './undoSend';
+import { loadTemplates, saveTemplates } from './templates';
 
 const defaultPrefs: UserPreferences = {
   theme: 'light',
@@ -117,6 +119,8 @@ export interface AppState {
   // Settings
   prefs: UserPreferences;
   savedViews: SavedView[];
+  templates: Template[];
+  templatePickerOpen: boolean;
 
   // Actions: data
   addAccount: (account: Account) => void;
@@ -133,6 +137,13 @@ export interface AppState {
   saveCurrentSearch: (name: string) => void;
   openCheatSheet: () => void;
   closeCheatSheet: () => void;
+
+  // Templates
+  upsertTemplate: (t: Template) => void;
+  deleteTemplate: (id: string) => void;
+  markTemplateUsed: (id: string) => void;
+  openTemplatePicker: () => void;
+  closeTemplatePicker: () => void;
   archive: (mailIds: MailId[]) => void;
   trash: (mailIds: MailId[]) => void;
   toggleStar: (mailId: MailId) => void;
@@ -191,6 +202,8 @@ export const useStore = create<AppState>((set, get) => ({
 
   prefs: loadPrefs(),
   savedViews: defaultViews,
+  templates: loadTemplates(),
+  templatePickerOpen: false,
 
   addAccount: (account) => {
     // Refuse silent duplicates so multiple onboardings don't pollute the list.
@@ -292,6 +305,29 @@ export const useStore = create<AppState>((set, get) => ({
 
   openCheatSheet: () => set({ cheatSheetOpen: true }),
   closeCheatSheet: () => set({ cheatSheetOpen: false }),
+
+  upsertTemplate: (t) => {
+    const others = get().templates.filter((x) => x.id !== t.id);
+    const next = [...others, t];
+    set({ templates: next });
+    saveTemplates(next);
+  },
+
+  deleteTemplate: (id) => {
+    const next = get().templates.filter((t) => t.id !== id);
+    set({ templates: next });
+    saveTemplates(next);
+  },
+
+  markTemplateUsed: (id) => {
+    const now = new Date().toISOString();
+    const next = get().templates.map((t) => (t.id === id ? { ...t, lastUsedAt: now } : t));
+    set({ templates: next });
+    saveTemplates(next);
+  },
+
+  openTemplatePicker: () => set({ templatePickerOpen: true }),
+  closeTemplatePicker: () => set({ templatePickerOpen: false }),
 
   selectThread: (id) => {
     set({ selectedThreadId: id });

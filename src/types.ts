@@ -141,6 +141,16 @@ export interface SavedView {
   query: string; // search query DSL
 }
 
+export interface Template {
+  id: string;
+  name: string;
+  /** Optional shortcut, e.g. "dispo" → triggers on /dispo or via the picker. */
+  shortcut?: string | undefined;
+  body: string;
+  /** ISO timestamp of last use, for ranking in the picker. */
+  lastUsedAt?: string | undefined;
+}
+
 export interface Draft {
   id: string;
   accountId: AccountId;

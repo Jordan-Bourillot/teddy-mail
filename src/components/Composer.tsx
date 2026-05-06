@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { fileToAttachment, validateAttachment, formatSize, attachmentGlyph } from '@/lib/attachments';
 import { toggleWrap, toggleLinePrefix, insertLink } from '@/lib/markdown';
+import { TemplatePicker } from './TemplatePicker';
 
 export function Composer() {
   const open = useStore((s) => s.composeOpen);
@@ -13,6 +14,7 @@ export function Composer() {
   const addAttachment = useStore((s) => s.addAttachment);
   const removeAttachment = useStore((s) => s.removeAttachment);
   const showToast = useStore((s) => s.showToast);
+  const openTemplatePicker = useStore((s) => s.openTemplatePicker);
   const undoSendSeconds = useStore((s) => s.prefs.undoSendSeconds);
 
   const subjectRef = useRef<HTMLInputElement>(null);
@@ -93,6 +95,9 @@ export function Composer() {
       } else if (mod && !e.shiftKey && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault();
         applyFormat('link');
+      } else if (mod && !e.shiftKey && e.key === '/') {
+        e.preventDefault();
+        openTemplatePicker();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -103,6 +108,23 @@ export function Composer() {
   if (!open || !draft) return null;
 
   const account = accounts.find((a) => a.id === draft.accountId);
+
+  const insertTemplateBody = (expanded: string) => {
+    const ta = bodyRef.current;
+    if (!ta || !draft) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const before = draft.body.slice(0, start);
+    const after = draft.body.slice(end);
+    const next = `${before}${expanded}${after}`;
+    update({ body: next });
+    requestAnimationFrame(() => {
+      ta.focus();
+      const cursor = start + expanded.length;
+      ta.setSelectionRange(cursor, cursor);
+    });
+    showToast('Modèle inséré');
+  };
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -230,7 +252,9 @@ export function Composer() {
         <ToolbarButton onClick={() => applyFormat('quote')} title="Citation" label="❝" />
         <Sep />
         <ToolbarButton onClick={() => applyFormat('link')} title="Lien (⌘K)" label="🔗" />
-        <span className="ml-auto text-[10px] text-muted px-2">Markdown</span>
+        <Sep />
+        <ToolbarButton onClick={openTemplatePicker} title="Insérer un modèle (⌘/)" label="✨" />
+        <span className="ml-auto text-[10px] text-muted px-2">Markdown · ⌘/</span>
       </div>
       <textarea
         ref={bodyRef}
@@ -327,6 +351,7 @@ export function Composer() {
           </button>
         </div>
       </footer>
+      <TemplatePicker onPick={insertTemplateBody} />
     </div>
   );
 }

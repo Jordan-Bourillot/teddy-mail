@@ -5,6 +5,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning [Se
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-05-06
+
+### Changed
+- Icon switched to the official Teddy Mail mascot (white bear with pink round glasses) sourced from the Triskell Studio asset library.
+- `scripts/generate_icons.mjs` reworked to source from the official PNG and produce a multi-size `.ico` (16/32/48/64/128/256) for crisp Windows rendering at every zoom level.
+
 ## [0.1.1] — 2026-05-06
 
 ### Changed

@@ -15,6 +15,7 @@ import type {
   MailId,
   PendingSend,
   SavedView,
+  ScheduledSend,
   Template,
   Thread,
   ThreadId,
@@ -53,6 +54,7 @@ const defaultViews: SavedView[] = [
 const PREFS_KEY = 'teddy-mail-prefs-v1';
 const ACCOUNTS_KEY = 'teddy-mail-accounts-v1';
 const DRAFTS_KEY = 'teddy-mail-drafts-v1';
+const SCHEDULED_KEY = 'teddy-mail-scheduled-v1';
 
 function loadPrefs(): UserPreferences {
   try {
@@ -117,6 +119,25 @@ function loadDrafts(): Draft[] {
   }
 }
 
+function loadScheduled(): ScheduledSend[] {
+  try {
+    const raw = localStorage.getItem(SCHEDULED_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as ScheduledSend[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveScheduled(scheduled: ScheduledSend[]): void {
+  try {
+    localStorage.setItem(SCHEDULED_KEY, JSON.stringify(scheduled));
+  } catch {
+    /* ignore */
+  }
+}
+
 function saveDrafts(drafts: Draft[]): void {
   try {
     // Strip attachment data URLs before persistence — they were in-memory only.
@@ -142,6 +163,7 @@ export interface AppState {
   mails: Mail[];
   threads: Thread[];
   drafts: Draft[];
+  scheduled: ScheduledSend[];
   pendingSends: PendingSend[];
 
   // UI
@@ -195,12 +217,15 @@ export interface AppState {
   // Actions: compose
   openCompose: (replyTo?: Mail) => void;
   closeCompose: () => void;
+  autoSaveDraft: () => void;
   resumeDraft: (draftId: string) => void;
   deleteDraft: (draftId: string) => void;
   updateDraft: (patch: Partial<Draft>) => void;
   addAttachment: (a: import('@/types').AttachmentDraft) => void;
   removeAttachment: (id: string) => void;
   sendDraft: () => void;
+  scheduleSendDraft: (whenIso: string) => void;
+  cancelScheduled: (id: string) => void;
   undoSend: () => void;
 
   // Actions: search and palette
@@ -229,6 +254,7 @@ export const useStore = create<AppState>((set, get) => ({
   mails: mockMails,
   threads: buildThreads(mockMails),
   drafts: loadDrafts(),
+  scheduled: loadScheduled(),
   pendingSends: [],
 
   selectedFolderId: 'unified-inbox',
@@ -479,6 +505,23 @@ export const useStore = create<AppState>((set, get) => ({
     set({ composeDraft: { ...cur, ...patch, updatedAt: new Date().toISOString() } });
   },
 
+  autoSaveDraft: () => {
+    const cur = get().composeDraft;
+    if (!cur) return;
+    // Only persist drafts that have content; don't pollute the list with empties.
+    if (
+      !cur.subject.trim() &&
+      !cur.body.trim() &&
+      cur.to.length === 0 &&
+      cur.attachments.length === 0
+    ) {
+      return;
+    }
+    const drafts = [cur, ...get().drafts.filter((d) => d.id !== cur.id)];
+    set({ drafts });
+    saveDrafts(drafts);
+  },
+
   resumeDraft: (draftId) => {
     const d = get().drafts.find((x) => x.id === draftId);
     if (!d) return;
@@ -555,6 +598,38 @@ export const useStore = create<AppState>((set, get) => ({
       },
       undoSendSeconds * 1000 + 200,
     );
+  },
+
+  scheduleSendDraft: (whenIso) => {
+    const draft = get().composeDraft;
+    if (!draft) return;
+    const when = new Date(whenIso);
+    if (Number.isNaN(when.getTime()) || when.getTime() <= Date.now()) {
+      get().showToast('Choisis une date dans le futur');
+      return;
+    }
+    const item: ScheduledSend = {
+      id: `sched_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
+      draft,
+      scheduledFor: when.toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+    const scheduled = [...get().scheduled, item];
+    set({ scheduled, composeOpen: false, composeDraft: null });
+    saveScheduled(scheduled);
+    get().showToast(`Programmé pour ${when.toLocaleString('fr-FR')}`, {
+      label: 'Annuler',
+      run: () => {
+        get().cancelScheduled(item.id);
+        set({ composeOpen: true, composeDraft: draft });
+      },
+    });
+  },
+
+  cancelScheduled: (id) => {
+    const scheduled = get().scheduled.filter((s) => s.id !== id);
+    set({ scheduled });
+    saveScheduled(scheduled);
   },
 
   undoSend: () => {

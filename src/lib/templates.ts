@@ -103,6 +103,50 @@ export function expandTemplate(body: string, ctx: ExpandContext): string {
   return out;
 }
 
+/**
+ * If the body ends with `/<shortcut> ` (slash, the shortcut, then space),
+ * return the patch that replaces it with the expanded template body.
+ * Returns null if no template matches.
+ */
+export interface SlashExpansion {
+  startIndex: number;
+  endIndex: number;
+  expanded: string;
+  templateId: string;
+}
+
+export function tryExpandSlashCommand(
+  body: string,
+  cursor: number,
+  templates: Template[],
+  ctxBuilder: (template: Template) => Parameters<typeof expandTemplate>[1],
+): SlashExpansion | null {
+  // Look back from cursor for "/word " ending exactly at cursor.
+  // Only fire on the trailing space, so we don't expand mid-word.
+  if (cursor < 2) return null;
+  if (body[cursor - 1] !== ' ') return null;
+  // Find the slash that opens this command. Allow letters/digits/underscore
+  // between '/' and the trailing space.
+  let i = cursor - 2;
+  while (i >= 0 && /[A-Za-z0-9_-]/.test(body[i] ?? '')) {
+    i -= 1;
+  }
+  if (body[i] !== '/') return null;
+  // Make sure '/' is at start-of-input or preceded by whitespace/newline,
+  // otherwise paths and URLs expand by accident.
+  if (i > 0 && !/[\s>]/.test(body[i - 1] ?? '')) return null;
+  const shortcut = body.slice(i + 1, cursor - 1);
+  if (!shortcut) return null;
+  const tpl = templates.find((t) => t.shortcut === shortcut);
+  if (!tpl) return null;
+  return {
+    startIndex: i,
+    endIndex: cursor,
+    expanded: expandTemplate(tpl.body, ctxBuilder(tpl)),
+    templateId: tpl.id,
+  };
+}
+
 export function newTemplate(): Template {
   return {
     id: `tpl_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,

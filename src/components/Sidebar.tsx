@@ -4,6 +4,7 @@ import { AddAccount } from './AddAccount';
 import { Insights } from './Insights';
 import { AccountsPanel } from './AccountsPanel';
 import { DraftsPanel } from './DraftsPanel';
+import { ScheduledPanel } from './ScheduledPanel';
 import { Avatar } from './Avatar';
 
 export function Sidebar() {
@@ -11,7 +12,9 @@ export function Sidebar() {
   const [showInsights, setShowInsights] = useState(false);
   const [showAccounts, setShowAccounts] = useState(false);
   const [showDrafts, setShowDrafts] = useState(false);
+  const [showScheduled, setShowScheduled] = useState(false);
   const draftsCount = useStore((s) => s.drafts.length);
+  const scheduledCount = useStore((s) => s.scheduled.length);
   const accounts = useStore((s) => s.accounts);
   const folders = useStore((s) => s.folders);
   const savedViews = useStore((s) => s.savedViews);
@@ -70,6 +73,12 @@ export function Sidebar() {
           count={draftsCount || undefined}
           active={false}
           onClick={() => setShowDrafts(true)}
+        />
+        <SidebarItem
+          label="Programmés"
+          count={scheduledCount || undefined}
+          active={false}
+          onClick={() => setShowScheduled(true)}
         />
         <SidebarItem
           label="Insights"
@@ -135,6 +144,7 @@ export function Sidebar() {
       {showInsights && <Insights onClose={() => setShowInsights(false)} />}
       {showAccounts && <AccountsPanel onClose={() => setShowAccounts(false)} />}
       {showDrafts && <DraftsPanel onClose={() => setShowDrafts(false)} />}
+      {showScheduled && <ScheduledPanel onClose={() => setShowScheduled(false)} />}
 
       <div className="p-3 border-t border-border text-xs text-muted">
         <div className="flex items-center gap-2">

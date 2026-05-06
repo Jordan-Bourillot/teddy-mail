@@ -183,3 +183,15 @@ export interface PendingSend {
   scheduledAt: string; // ISO
   cancellable: boolean;
 }
+
+/**
+ * A scheduled send is a draft frozen at submission time, queued to be sent
+ * later. Different from PendingSend (which is the in-flight undo-window
+ * buffer): a ScheduledSend persists across reloads and may sit for hours/days.
+ */
+export interface ScheduledSend {
+  id: string;
+  draft: Draft;
+  scheduledFor: string; // ISO target time
+  createdAt: string;
+}

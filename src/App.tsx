@@ -11,6 +11,7 @@ import { StatusBar } from './components/StatusBar';
 import { Toast } from './components/Toast';
 import { CheatSheet } from './components/CheatSheet';
 import { UpdateChecker } from './components/UpdateChecker';
+import { ScheduledSendDispatcher } from './components/ScheduledSendDispatcher';
 import { SettingsButton } from './components/SettingsPanel';
 import { applyTheme } from '@/lib/themes';
 import { applyReducedMotion } from '@/lib/sounds';
@@ -276,6 +277,7 @@ export function App() {
       <CommandPalette />
       <CheatSheet />
       <UpdateChecker />
+      <ScheduledSendDispatcher />
       <Toast />
       {showOnboarding && <Onboarding onDone={() => setShowOnboarding(false)} />}
     </div>

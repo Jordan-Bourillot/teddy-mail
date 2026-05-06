@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { fileToAttachment, validateAttachment, formatSize, attachmentGlyph } from '@/lib/attachments';
 import { toggleWrap, toggleLinePrefix, insertLink } from '@/lib/markdown';
+import { tryExpandSlashCommand } from '@/lib/templates';
 import { TemplatePicker } from './TemplatePicker';
 
 export function Composer() {
@@ -14,8 +15,14 @@ export function Composer() {
   const addAttachment = useStore((s) => s.addAttachment);
   const removeAttachment = useStore((s) => s.removeAttachment);
   const showToast = useStore((s) => s.showToast);
+  const autoSave = useStore((s) => s.autoSaveDraft);
+  const templates = useStore((s) => s.templates);
+  const markTemplateUsed = useStore((s) => s.markTemplateUsed);
   const openTemplatePicker = useStore((s) => s.openTemplatePicker);
+  const scheduleSendDraft = useStore((s) => s.scheduleSendDraft);
   const undoSendSeconds = useStore((s) => s.prefs.undoSendSeconds);
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [savedTick, setSavedTick] = useState<number>(0);
 
   const subjectRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,6 +77,17 @@ export function Composer() {
       lastSavedAtRef.current = draft.updatedAt;
     }
   }, [open, draft]);
+
+  // Debounced auto-save: every time the draft updatedAt changes, schedule a
+  // save 2 seconds later. Cancelled if another change comes in first.
+  useEffect(() => {
+    if (!open || !draft) return;
+    const t = setTimeout(() => {
+      autoSave();
+      setSavedTick(Date.now());
+    }, 2000);
+    return () => clearTimeout(t);
+  }, [open, draft?.updatedAt, autoSave]);
 
   useEffect(() => {
     if (!open) return;
@@ -259,9 +277,40 @@ export function Composer() {
       <textarea
         ref={bodyRef}
         value={draft.body}
-        onChange={(e) => update({ body: e.target.value })}
+        onChange={(e) => {
+          const ta = e.target;
+          const value = ta.value;
+          const cursor = ta.selectionStart;
+
+          // Try /shortcut + space → expand inline.
+          const recipient = draft.to[0];
+          const acc = accounts.find((a) => a.id === draft.accountId);
+          const expansion = tryExpandSlashCommand(value, cursor, templates, () => ({
+            ...(recipient?.name ? { recipientName: recipient.name } : {}),
+            ...(recipient?.email ? { recipientEmail: recipient.email } : {}),
+            ...(acc?.displayName ? { myName: acc.displayName } : {}),
+            ...(acc?.email ? { myEmail: acc.email } : {}),
+          }));
+          if (expansion) {
+            const before = value.slice(0, expansion.startIndex);
+            const after = value.slice(expansion.endIndex);
+            const next = `${before}${expansion.expanded}${after}`;
+            update({ body: next });
+            markTemplateUsed(expansion.templateId);
+            showToast('Modèle inséré');
+            requestAnimationFrame(() => {
+              if (!bodyRef.current) return;
+              const newCursor = expansion.startIndex + expansion.expanded.length;
+              bodyRef.current.focus();
+              bodyRef.current.setSelectionRange(newCursor, newCursor);
+            });
+            return;
+          }
+
+          update({ body: value });
+        }}
         className="flex-1 px-4 py-3 bg-transparent outline-none resize-none text-[15px] leading-relaxed font-sans"
-        placeholder="Écris ton message…    **gras**    _italique_    `code`    [lien](url)    - liste"
+        placeholder="Écris ton message…  Astuce : /dispo, /merci, /relance pour insérer un modèle"
       />
 
       {hasAttachments && (
@@ -322,8 +371,11 @@ export function Composer() {
       )}
 
       <footer className="flex items-center justify-between px-4 py-2 border-t border-border bg-surface-2 rounded-b-lg">
-        <div className="text-xs text-muted">
-          Auto-save · {new Date(draft.updatedAt).toLocaleTimeString()}
+        <div className="text-xs text-muted flex items-center gap-1.5">
+          <span className={['inline-block w-1.5 h-1.5 rounded-full transition', savedTick > 0 ? 'bg-success' : 'bg-muted/40'].join(' ')} />
+          {savedTick > 0
+            ? `Sauvegardé ${new Date(savedTick).toLocaleTimeString()}`
+            : 'Brouillon non sauvegardé'}
           {attachmentWarning && (
             <span className="ml-3 text-warning">⚠ Tu as mentionné une pièce jointe absente</span>
           )}
@@ -342,13 +394,37 @@ export function Composer() {
           >
             Brouillon
           </button>
-          <button
-            onClick={send}
-            className="px-4 py-1.5 text-sm rounded bg-accent text-white font-medium hover:opacity-90 transition"
-            title={`Envoyer (Ctrl/Cmd+Entrée). Annulable pendant ${undoSendSeconds}s.`}
-          >
-            Envoyer
-          </button>
+          <div className="flex items-stretch rounded bg-accent overflow-hidden">
+            <button
+              onClick={send}
+              className="px-4 py-1.5 text-sm text-white font-medium hover:opacity-90 transition"
+              title={`Envoyer (Ctrl/Cmd+Entrée). Annulable pendant ${undoSendSeconds}s.`}
+            >
+              Envoyer
+            </button>
+            <button
+              onClick={() => setShowSchedule((v) => !v)}
+              className="px-2 py-1.5 text-xs text-white border-l border-white/20 hover:opacity-90 transition"
+              title="Programmer l'envoi"
+              aria-label="Programmer l'envoi"
+            >
+              ▾
+            </button>
+          </div>
+          {showSchedule && (
+            <div
+              className="absolute right-4 bottom-14 z-30 w-72 bg-surface border border-border rounded shadow-xl p-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ScheduleQuickPick
+                onSchedule={(iso) => {
+                  scheduleSendDraft(iso);
+                  setShowSchedule(false);
+                }}
+                onClose={() => setShowSchedule(false)}
+              />
+            </div>
+          )}
         </div>
       </footer>
       <TemplatePicker onPick={insertTemplateBody} />
@@ -400,4 +476,86 @@ function ToolbarButton({
 
 function Sep() {
   return <div className="w-px h-5 bg-border mx-1" />;
+}
+
+function ScheduleQuickPick({
+  onSchedule,
+  onClose,
+}: {
+  onSchedule: (iso: string) => void;
+  onClose: () => void;
+}) {
+  const presets = [
+    {
+      label: 'Demain matin 9h',
+      compute: () => {
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        d.setHours(9, 0, 0, 0);
+        return d;
+      },
+    },
+    {
+      label: 'Lundi prochain 8h',
+      compute: () => {
+        const d = new Date();
+        const day = d.getDay();
+        const delta = ((1 + 7 - day) % 7) || 7;
+        d.setDate(d.getDate() + delta);
+        d.setHours(8, 0, 0, 0);
+        return d;
+      },
+    },
+    {
+      label: 'Dans 2 heures',
+      compute: () => new Date(Date.now() + 2 * 60 * 60 * 1000),
+    },
+  ];
+
+  // Default custom value: tomorrow 9h, formatted for datetime-local input.
+  const defaultLocal = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(9, 0, 0, 0);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  })();
+
+  return (
+    <div className="space-y-1">
+      <div className="text-xs uppercase tracking-wider text-muted px-2 py-1">Programmer</div>
+      {presets.map((p) => (
+        <button
+          key={p.label}
+          onClick={() => onSchedule(p.compute().toISOString())}
+          className="w-full text-left px-3 py-1.5 text-sm rounded hover:bg-surface-2 flex items-center justify-between"
+        >
+          <span>{p.label}</span>
+          <span className="text-xs text-muted">
+            {p.compute().toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+          </span>
+        </button>
+      ))}
+      <div className="border-t border-border my-1" />
+      <div className="px-2 py-1">
+        <div className="text-xs text-muted mb-1">Date personnalisée</div>
+        <input
+          type="datetime-local"
+          defaultValue={defaultLocal}
+          onChange={(e) => {
+            const d = new Date(e.target.value);
+            if (Number.isNaN(d.getTime())) return;
+            onSchedule(d.toISOString());
+          }}
+          className="w-full px-2 py-1 text-sm rounded border border-border bg-bg outline-none focus:border-accent"
+        />
+      </div>
+      <button
+        onClick={onClose}
+        className="w-full px-3 py-1 text-xs text-muted hover:text-text mt-1"
+      >
+        Fermer
+      </button>
+    </div>
+  );
 }

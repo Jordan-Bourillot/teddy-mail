@@ -5,6 +5,7 @@ import {
   rankTemplates,
   expandTemplate,
   newTemplate,
+  tryExpandSlashCommand,
 } from '../templates';
 import type { Template } from '@/types';
 
@@ -112,5 +113,48 @@ describe('expandTemplate', () => {
   it('leaves unrelated placeholders alone', () => {
     const out = expandTemplate('Hello {{unknown}}', { now: fixedNow });
     expect(out).toBe('Hello {{unknown}}');
+  });
+});
+
+describe('tryExpandSlashCommand', () => {
+  const tpls: Template[] = [
+    { id: 't1', name: 'Dispo', shortcut: 'dispo', body: 'Voici mes dispos' },
+    { id: 't2', name: 'Merci', shortcut: 'merci', body: 'Merci !' },
+  ];
+
+  it('expands /shortcut at end of input', () => {
+    const body = 'Hi /dispo ';
+    const r = tryExpandSlashCommand(body, body.length, tpls, () => ({}));
+    expect(r).not.toBeNull();
+    expect(r?.expanded).toBe('Voici mes dispos');
+    expect(r?.startIndex).toBe(3);
+    expect(r?.endIndex).toBe(body.length);
+  });
+
+  it('does not expand without trailing space', () => {
+    const body = 'Hi /dispo';
+    expect(tryExpandSlashCommand(body, body.length, tpls, () => ({}))).toBeNull();
+  });
+
+  it('does not expand unknown shortcut', () => {
+    const body = '/unknown ';
+    expect(tryExpandSlashCommand(body, body.length, tpls, () => ({}))).toBeNull();
+  });
+
+  it('does not expand inside a URL or path', () => {
+    const body = 'see https://x.fr/dispo ';
+    expect(tryExpandSlashCommand(body, body.length, tpls, () => ({}))).toBeNull();
+  });
+
+  it('expands at start of input', () => {
+    const body = '/merci ';
+    const r = tryExpandSlashCommand(body, body.length, tpls, () => ({}));
+    expect(r?.expanded).toBe('Merci !');
+  });
+
+  it('expands at start of new line', () => {
+    const body = 'Hello\n/dispo ';
+    const r = tryExpandSlashCommand(body, body.length, tpls, () => ({}));
+    expect(r).not.toBeNull();
   });
 });

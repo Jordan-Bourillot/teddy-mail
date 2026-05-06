@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.tauri.app/config/2.0",
+  "productName": "Pite Lafe Mail",
+  "version": "0.1.0",
+  "identifier": "studio.triskell.pite-lafe-mail",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Pite Lafe Mail",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 800,
+        "minHeight": 600,
+        "fullscreen": false,
+        "resizable": true,
+        "decorations": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg", "msi", "appimage", "deb"],
+    "icon": ["icons/icon.png"],
+    "category": "Productivity",
+    "shortDescription": "Calm, sovereign, customizable mail client",
+    "longDescription": "Pite Lafe Mail: calm, sovereign, deeply customizable. Multi-account IMAP/JMAP, on-device classification, tracker blocking, encrypted local store."
+  }
+}

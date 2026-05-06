@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 6px;
+  --font-sans: 'Inter', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* ----- Theme: Light ----- */
+[data-theme='light'] {
+  --color-bg: 252 252 251;
+  --color-surface: 255 255 255;
+  --color-surface-2: 246 246 244;
+  --color-border: 228 228 224;
+  --color-text: 28 28 28;
+  --color-muted: 120 120 116;
+  --color-accent: 99 102 241;
+  --color-success: 34 139 100;
+  --color-warning: 217 119 6;
+  --color-danger: 220 38 38;
+}
+
+/* ----- Theme: Dark ----- */
+[data-theme='dark'] {
+  --color-bg: 18 18 20;
+  --color-surface: 26 26 28;
+  --color-surface-2: 34 34 38;
+  --color-border: 50 50 54;
+  --color-text: 232 232 230;
+  --color-muted: 138 138 134;
+  --color-accent: 129 140 248;
+  --color-success: 52 168 122;
+  --color-warning: 234 142 27;
+  --color-danger: 239 68 68;
+}
+
+/* ----- Theme: Sepia ----- */
+[data-theme='sepia'] {
+  --color-bg: 247 240 226;
+  --color-surface: 252 246 232;
+  --color-surface-2: 240 232 216;
+  --color-border: 218 206 178;
+  --color-text: 60 47 30;
+  --color-muted: 130 110 80;
+  --color-accent: 156 81 38;
+  --color-success: 90 130 60;
+  --color-warning: 192 100 20;
+  --color-danger: 180 50 30;
+}
+
+/* ----- Theme: Solarized ----- */
+[data-theme='solarized'] {
+  --color-bg: 253 246 227;
+  --color-surface: 238 232 213;
+  --color-surface-2: 245 240 220;
+  --color-border: 220 210 180;
+  --color-text: 88 110 117;
+  --color-muted: 147 161 161;
+  --color-accent: 38 139 210;
+  --color-success: 133 153 0;
+  --color-warning: 181 137 0;
+  --color-danger: 220 50 47;
+}
+
+/* ----- Theme: High Contrast ----- */
+[data-theme='contrast'] {
+  --color-bg: 0 0 0;
+  --color-surface: 0 0 0;
+  --color-surface-2: 20 20 20;
+  --color-border: 255 255 0;
+  --color-text: 255 255 255;
+  --color-muted: 200 200 200;
+  --color-accent: 255 255 0;
+  --color-success: 0 255 0;
+  --color-warning: 255 200 0;
+  --color-danger: 255 80 80;
+}
+
+/* ----- Theme: Nocturne ----- */
+[data-theme='nocturne'] {
+  --color-bg: 8 10 18;
+  --color-surface: 14 18 30;
+  --color-surface-2: 22 28 44;
+  --color-border: 36 44 64;
+  --color-text: 200 210 230;
+  --color-muted: 110 122 148;
+  --color-accent: 144 110 230;
+  --color-success: 60 180 140;
+  --color-warning: 220 140 40;
+  --color-danger: 230 70 90;
+}
+
+/* ----- Density modes ----- */
+[data-density='compact'] {
+  --row-height: 56px;
+  --row-pad-y: 6px;
+}
+[data-density='cozy'] {
+  --row-height: 72px;
+  --row-pad-y: 10px;
+}
+[data-density='spacious'] {
+  --row-height: 96px;
+  --row-pad-y: 14px;
+}
+
+/* ----- Reset and basics ----- */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--color-bg));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-border));
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-muted));
+}
+
+/* ----- Reduced motion ----- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+[data-reduce-motion='on'] *,
+[data-reduce-motion='on'] *::before,
+[data-reduce-motion='on'] *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ----- Focus ring ----- */
+:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* ----- Utility ----- */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: rgb(var(--color-surface-2));
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 4px;
+  color: rgb(var(--color-muted));
+}

@@ -1,0 +1,24 @@
+node_modules
+dist
+build
+.vite
+*.log
+.DS_Store
+.env
+.env.local
+.idea
+.vscode
+
+# Rust
+target/
+Cargo.lock
+
+# Tauri
+src-tauri/target/
+src-tauri/Cargo.lock
+
+# Local
+*.db
+*.db-journal
+*.db-wal
+*.db-shm

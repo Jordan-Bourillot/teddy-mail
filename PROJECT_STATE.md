@@ -1,110 +1,185 @@
 # PROJECT_STATE — Teddy Mail
 
-État courant : **V0.1.0 — desktop shell construit (.exe Windows), backend mail décorrelé pour V0.2.**
+État courant : **V0.5.0 — UI feature-complete, Rust core compile et linké au shell desktop, prêt pour V0.6 (vraie sync mail).**
 
-## Pipeline V0.1.0 réalisé
-
-- ✅ Repo GitHub public : https://github.com/Jordan-Bourillot/teddy-mail
-- ✅ Toolchain installée : Rust 1.95, VS Build Tools 2022, Windows SDK 10/11, Strawberry Perl
-- ✅ React UI complet packagé (`npm run build` → 360 ko gzippé 112 ko)
-- ✅ Shell Tauri 2 compilé en release (Windows x64)
-- ✅ Installeurs générés : `.exe` (NSIS) + `.msi` (WiX)
-- ✅ Workflow GitHub Actions pour CI + release cross-OS sur push de tag
-- ✅ rust-core : 16 erreurs d'API-drift détectées (futures/tokio compat principalement). Décorrelé de src-tauri pour V0.1.0, traitement reporté en V0.2.
-
-
-## Étapes terminées
+## Phases livrées
 
 ### Phase 1 — Spec et fondations
 - [x] Spécification produit (4 axes : enrichissement, fiabilité, perso, UX/UI)
-- [x] Plan technique (stack, archi, sprints)
+- [x] Plan technique (stack Tauri + React + Rust)
 
-### Phase 2 — Implémentation V1 web
-- [x] Scaffolding (Vite + React 19 + TS strict + Tailwind + Vitest)
-- [x] Types domaine (`src/types.ts`)
-- [x] Mock data (8 mails, 2 comptes)
-- [x] Logique métier : store Zustand, smartSort, threading JWZ, search DSL, snooze, trackers, themes, hotkeys (4 profils), undoSend, engagements
+### Phase 2 — Implémentation V0.1 web
+- [x] Scaffolding Vite + React 19 + TS strict + Tailwind + Vitest
+- [x] Logique métier : store Zustand, smartSort, threading JWZ, search DSL, snooze, trackers, themes, hotkeys, undoSend, engagements
 - [x] Composants : Sidebar, MailList, MailReader, Composer, CommandPalette, StatusBar, Toast, SettingsPanel, Avatar
-- [x] Shell App.tsx avec routing clavier global
-- [x] Cœur Rust scaffold : auth, parser, store SQLCipher+FTS5, imap_sync IDLE, smtp, commands
-- [x] Tests Vitest (8 suites) + tests Rust (parser, store)
-- [x] Fix bug rendu : `useShallow` sur les sélecteurs renvoyant des tableaux dérivés
+- [x] Tests : 38 → progressivement 111 → finale 111
 
-### Phase 3 — Onboarding et intégration desktop
-- [x] **Onboarding 90s** : 3 écrans (thème + previews live, ajout compte, raccourcis), persistance `localStorage`
-- [x] **Shell Tauri** : `src-tauri/Cargo.toml`, `main.rs`, `commands.rs`, `build.rs`
-- [x] **Bridge IPC** (`src/lib/ipc.ts`) : détection Tauri vs web, fallback mocks, wrappers typés
-- [x] **OAuth PKCE** : helpers TS + commands Rust (`start_oauth`, `complete_oauth`) avec S256 côté Rust
-- [x] **Écran AddAccount** OAuth (Gmail/Outlook)
+### Phase 3 — Onboarding + scaffold Tauri/OAuth + provider IMAP générique + Insights
+- [x] Onboarding 90s, shell Tauri, IPC bridge web/desktop
+- [x] OAuth PKCE Gmail/Outlook + écran AddAccount
+- [x] Insights view (stats locales, temps gagné)
+- [x] Reduced motion + sound packs (WebAudio)
 
-### Phase 5 — Productivité, raccourcis, responsive
-- [x] **Multi-select** dans MailList : checkbox au hover, bascule clic, bordure accent quand sélectionné
-- [x] **BulkActionBar** : compteur, "Tout sélectionner", Archiver, Lus, Snooze (presets + custom datetime), Supprimer
-- [x] **Raccourcis bulk** : `Cmd/Ctrl+A` sélectionne tout visible, `Esc` désélectionne, `E`/`#` archivent/suppriment la sélection si présente
-- [x] **CheatSheet** (`?`) : overlay listant tous les raccourcis groupés (Navigation, Action mail, Composition, Recherche, Aide), filtrage texte, mention du profil clavier actif
-- [x] **Sauvegarde de recherche** : bouton ★ Sauver dans la liste quand une recherche est active, ajoute une vue persistante dans la sidebar
-- [x] **Snooze date personnalisée** : datetime-local input dans MailReader et BulkActionBar, en plus des 6 presets
-- [x] **Layout responsive** : `useIsNarrow` (≤900px), Sidebar en drawer derrière hamburger, navigation single-pane (liste OU lecteur), bouton retour `←` dans le header
-- [x] **ARCHITECTURE.md** : explication détaillée web/desktop, diagrammes, flux d'action, sécurité
+### Phase 4 — Productivité, raccourcis, responsive (V0.2.x)
+- [x] Multi-select avec actions groupées (archiver, snooze, supprimer)
+- [x] Cheat sheet (?), command palette (Cmd+K)
+- [x] Save current search as view + CRUD vues
+- [x] Snooze date personnalisée
+- [x] Layout responsive mobile
 
-### Phase 4 — Provider IMAP générique, Insights, a11y/sons
-- [x] **AddAccount IMAP/SMTP générique** avec auto-détection du provider via `imapPresets.ts` (Free, Orange, SFR, La Poste, Proton Bridge, Fastmail, Mailbox.org)
-- [x] **Action `addAccount`** dans le store : crée 5 dossiers par défaut (inbox, sent, drafts, archive, trash), refuse les doublons par id ou email
-- [x] **Vue Insights** (`Insights.tsx` + `insights.ts`) : mails cette semaine, trend %, traceurs neutralisés, temps gagné estimé, répartition par catégorie avec barres, top 5 expéditeurs
-- [x] **Préférence reducedMotion** (auto/always/never) avec listener sur changement OS
-- [x] **Sound pack** (off/subtle/crisp) via WebAudio API embarquée — joué sur send, archive, snooze
-- [x] **Settings** étendus avec section Mouvement et son
-- [x] **Bug fix** : regex de détection d'engagements FR cassée sur l'apostrophe (`t'envoie` n'était pas matché). Réécrite, gère apostrophe droite ET typographique.
-- [x] **Dette résolue** : crate `futures = "0.3"` réelle ajoutée à `rust-core/Cargo.toml`, shim retiré de `imap_sync.rs`.
-- [x] Tests Vitest étendus : `insights.test.ts` (5 tests), `imapPresets.test.ts` (5 tests). **Total : 48 tests passent.**
-- [x] TypeScript `tsc --noEmit` passe en strict.
+### Phase 5 — Profil + auto-update + drag-drop attachments (V0.2.x)
+- [x] Édition signature, photo profil, nom affiché par compte
+- [x] Auto-update via tauri-plugin-updater (clé minisign générée, builds signés)
+- [x] Drag-and-drop pièces jointes avec preview images, validation 25 Mo/fichier
 
-## Étape en cours
+### Phase 6 — Writing experience (V0.3.0)
+- [x] Markdown toolbar (B/I/code/lists/quote/link) + Cmd+B/I/K
+- [x] Templates avec variables, picker (Cmd+/), gestionnaire CRUD
+- [x] Slash auto-expand `/dispo`
+- [x] Schedule send (presets + datetime picker, persistance, dispatcher 30s)
+- [x] Auto-save during typing (debounced 2s)
+- [x] Word count + reading time
 
-Aucune. Toutes étapes du plan livrées.
+### Phase 7 — Reader pane upgrades (V0.3.1)
+- [x] Forward action (Transférer + F)
+- [x] Quick reply inline below thread
+- [x] Find in mail (Cmd+F) avec highlight et navigation
+- [x] Snooze countdown sur les cards
 
-## Reprises possibles
+### Phase 8 — Inbox management (V0.3.2)
+- [x] Reply All (Shift+R) avec dedup automatique
+- [x] Saved view CRUD (rename/delete depuis sidebar)
+- [x] Mock new-mail simulator (5 min, respect quiet hours)
+- [x] Labels CRUD avec chips colorés sur threads
 
-1. **Compiler le shell Tauri** : `cd src-tauri && cargo build`. Nécessite Rust toolchain. Première compilation ~5 min.
-2. **Brancher la sync IMAP réelle** : une fois `cargo build` ok, lancer `npm run tauri:dev`, le store SQLite chiffré sera créé dans le `app_data_dir` OS, et le worker IDLE peut être lancé depuis une command.
-3. **OAuth réel** : enregistrer une app dans Google Cloud Console (Gmail) ou Microsoft Entra (Outlook), récupérer le client_id, le coller dans l'écran AddAccount. La redirect URI `teddymail://oauth-callback` nécessite l'enregistrement d'un deep-link via `tauri-plugin-deep-link` (à ajouter en V1.5).
-4. **Migration Fuse.js → SQLite FTS5** : remplacer `searchMails` côté TS par `ipc.search()` quand `isStoreOpen()` est vrai.
-5. **Mobile** : factoriser les modules TS partageables (logique pure, pas de DOM) puis bridger via React Native + UniFFI Rust.
+### Phase 9 — Atelier view (V0.4.0)
+- [x] **Vue alternative éditoriale** : hero card + clusters par catégorie en masonry
+- [x] Toggle Classique/Atelier dans sidebar
+- [x] Couleurs catégories en tinte douce (6%)
+- [x] Click-to-expand inline, hover-revealed actions
+- [x] Salutation contextuelle au temps qu'il fait
 
-## Décisions structurantes
+### Phase 10 — UX polish (V0.4.1)
+- [x] Quick reply chip suggestions (heuristiques contextuelles meeting/thanks/question/request)
+- [x] Composer minimize/expand
+- [x] Vacation responder (UI + statut bar 🌴)
+- [x] Atelier kbd nav (j/k/Enter)
 
-- **No proprietary OAuth secrets in Teddy** → chaque utilisateur enregistre sa propre app OAuth, en garde le contrôle. Évite les rate limits partagés et la dépendance à un compte centralisé. Friction onboarding +1 min, ratio acceptable pour la cible "souverains".
-- **Web fallback systématique** sur l'IPC : `ipc.ts` détecte `window.__TAURI_INTERNALS__`, sinon route vers des mocks. Le mode `npm run dev` reste fonctionnel pour développement et démo.
-- **PKCE côté Rust** : code_challenge SHA256 calculé dans la command `start_oauth`, pas dans le renderer. Token exchange aussi côté Rust pour ne jamais exposer le refresh token au JS.
-- **Onboarding non bloquant** : "Passer la configuration" disponible à tout moment, l'app marche en données fictives sans compte.
+### Phase 11 — Rust core compile (V0.5.0) — **À FOND**
+- [x] **rust-core compile cleanly** : 16 → 0 erreurs
+- [x] tokio-util compat bridge pour futures AsyncRead/Write
+- [x] `tokio::TcpStream → .compat() → futures-stream → async-native-tls → async-imap`
+- [x] async-imap Authenticator trait satisfait
+- [x] Cargo test : 4/4 passants (parser MIME safe, store SQLCipher, FTS5, snooze)
+- [x] **rust-core re-linké dans src-tauri** (était commenté depuis V0.1.0)
+- [x] `parse_raw` exposé comme command Tauri réelle (pas stub) — l'UI peut maintenant parser un mail RFC822 via IPC
+- [x] Documentation complète (PROJECT_STATE, ARCHITECTURE, CHANGELOG, CONTRIBUTING)
 
-## Hypothèses non encore vérifiées
+## Métriques
 
-- Le tri intelligent par règles atteint > 85 % d'accord avec le tri manuel utilisateur.
-- L'utilisateur cible accepte de créer sa propre app OAuth (vs friction zéro Gmail/Outlook officiel).
-- Onboarding 90s tient effectivement en 90s (à mesurer en user test).
+- **111 tests TypeScript** + **4 tests Rust** = **115 tests verts**
+- **TypeScript strict** sans erreur
+- **rust-core cargo check** sans erreur (1 warning unused import bénin)
+- **Builds signés** Windows NSIS + MSI + portable .exe
+- **Auto-update fonctionnel** sur la chaîne v0.2.0 → v0.5.0
 
-## Risques identifiés
+## V0.5.0 inclut (récap des features visibles)
 
-- Tauri 2.x encore jeune ; plan B Electron documenté.
-- Parsing MIME = source #1 de bugs ; fuzzing à mettre en place avant V1 publique.
-- Flow OAuth deep-link nécessite plugin Tauri + handler URI scheme par OS — pas trivial sur Windows.
-- `mail-parser` API a évolué entre versions ; signatures à valider à la première compile.
+### Compose
+- Multi-comptes IMAP / OAuth Gmail / OAuth Outlook (UI prêt, sync V0.6)
+- Markdown toolbar + raccourcis
+- Templates avec variables et auto-expand /shortcut
+- Drag-drop pièces jointes (25 Mo/file, 50 Mo/mail)
+- Auto-save 2s + warn pièce jointe oubliée
+- Schedule send avec presets et datetime custom
+- Composer minimize/expand
+- Cmd+Entrée envoie avec window d'annulation 5/10/30s
+- Vacation responder (UI configurée)
 
-## Dette / TODOs reportés
+### Read
+- Threading JWZ + fallback sujet
+- Reply / Reply All / Forward / Quick reply inline
+- Quick reply chip suggestions contextuelles
+- Markdown rendering pour mails plain-text reçus
+- Find in mail (Cmd+F) avec highlight
+- Print mail (Cmd+P) avec CSS print-friendly
+- Engagements détectés (FR/EN)
+- Trackers neutralisés au render + compteur
 
-- Compile Rust core et shell : nécessite Rust toolchain (cargo absent sur cette machine). À valider à la première install.
-- `mail-parser` API : signatures à vérifier sur la version réelle (`headers_raw`, `as_text_list`).
-- Ajout `tauri-plugin-deep-link` pour recevoir le redirect OAuth automatiquement (au lieu du paste manuel du code).
-- Drag-out pièces jointes : nécessite Tauri command file system.
-- Composer fixed bottom-right : ajouter mode pleine-fenêtre.
-- AddAccount : provider iCloud OAuth (V1.1).
-- Validation IMAP/SMTP credentials avant ajout (test connexion en Tauri).
-- Tests E2E Playwright sur les parcours critiques.
-- Signature/notarization 3 OS dans GitHub Actions.
-- Pricing et licence à finaliser.
+### Inbox
+- Vue Classique (3 panes) ou Atelier (éditorial single-pane)
+- Multi-select + bulk archive/snooze/delete/markRead
+- Search DSL (`from:` `has:` `is:` `before:` `after:`) + Fuse.js fuzzy
+- Save search as view, rename, delete
+- Snooze avec presets + custom datetime + countdown sur cards
+- Labels CRUD avec chips colorés
+- Insights (stats locales, top expéditeurs, temps gagné)
+- Drafts panel persistant
+- Scheduled panel avec annulation
+- Mock new-mail simulator
 
-## Reprise rapide
+### Customization
+- 6 thèmes (clair, sombre, sépia, solarized, contraste, nocturne)
+- 3 densités, taille police 12-18px
+- 4 profils clavier (teddy, gmail, outlook, mutt)
+- Reduced motion (auto/always/never)
+- Sound packs WebAudio (off/subtle/crisp)
+- Photo de profil, nom affiché, couleur d'accent par compte
+- Signature multi-ligne avec preview
+- Quiet hours pour notifications
+
+### Desktop
+- App Tauri 2 native (10 Mo binaire, ~50 Mo RAM)
+- Auto-update minisign-signé via GitHub releases
+- Notifications navigateur natives quand permission accordée
+- Installeurs NSIS (4 Mo) + MSI (5.9 Mo) + portable .exe (15 Mo)
+- Layout responsive (desktop / mobile-like sous 900px)
+
+## Architecture validée
+
+```
+React (UI)
+    ↓ Zustand (single store)
+    ↓ ipc.ts (Tauri.invoke avec mocks web fallback)
+    ↓
+Rust shell (src-tauri)
+    ├─ tauri 2 + plugins (shell, dialog, os, updater, process)
+    └─ teddy_mail_core (lib)
+         ├─ parser.rs   ← mail-parser, count_tracker_pixels
+         ├─ store.rs    ← rusqlite + SQLCipher + FTS5 + triggers
+         ├─ imap_sync.rs ← tokio + tokio-util compat + async-imap IDLE
+         ├─ smtp.rs     ← lettre + XOAUTH2
+         ├─ auth.rs     ← keyring OS, OAuth tokens
+         └─ commands.rs ← surface IPC
+```
+
+## Reste pour V0.6 (vrai mail)
+
+- Wire `ImapWorker` au store frontend (event stream → Zustand)
+- Vraie création de compte IMAP/SMTP qui authentifie + démarre le worker
+- OAuth deep-link callback (`tauri-plugin-deep-link`)
+- Lecture/envoi/archive depuis le store SQLite chiffré au lieu du mock
+- Migration des localStorage existants vers le store SQLite
+- Tests E2E Playwright sur les parcours critiques
+
+## Reste pour V1.0 (publique)
+
+- macOS + Linux signed builds via GitHub Actions
+- Code signing Authenticode Windows (~300€/an EV cert)
+- Apple Developer notarization (~99€/an)
+- Pricing et licence finalisés
+- Site web / landing page
+- Tests utilisateurs réels (50 entretiens)
+- Marketing et lancement
+
+## Dette technique restante
+
+- 1 warning bénin "unused import: CoreError" dans rust-core (pas bloquant)
+- mail-parser API : mes structs `ParsedMail` sont sérialisables mais le retour de `parse_raw` doit être typé côté TS (nominal `serde_json::Value` accepté pour V0.5)
+- Drafts data URLs strippées à la persistance (recharge attachments avant envoi)
+- Tests E2E Playwright pas encore en place (couvert par les 111 unit tests)
+
+## Quick reprise
 
 ```bash
 # UI seule (mode démo)
@@ -112,11 +187,16 @@ npm install
 npm run dev      # http://localhost:5173
 
 # Tests TS
-npm run test
+npm run test      # 111 verts
 
-# App desktop complète (Rust toolchain requise)
-npm run tauri:dev
+# Tests Rust
+cd rust-core && cargo test  # 4 verts (depuis V0.5.0)
 
-# Build production
-npm run tauri:build
+# App desktop complète
+npm run tauri:dev   # nécessite Rust + MSVC + perl (Windows)
+
+# Build production signé
+export TAURI_SIGNING_PRIVATE_KEY=$(cat ~/.tauri/teddy-mail.key)
+export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=""
+npm run tauri:build -- --bundles nsis,msi
 ```

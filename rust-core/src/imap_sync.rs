@@ -2,15 +2,22 @@
 //!
 //! One worker per account. Maintains a long-lived TLS+IMAP connection,
 //! uses IDLE for push notifications when supported, falls back to a 60s
-//! poll otherwise. CONDSTORE/QRESYNC are used when advertised.
+//! poll otherwise.
+//!
+//! Architecture note: `tokio` and `async-imap` use different async-IO traits
+//! (tokio's own `AsyncRead/Write` vs `futures::AsyncRead/Write`). We bridge
+//! with `tokio_util::compat::TokioAsyncReadCompatExt` so we can keep tokio
+//! everywhere except inside the IMAP session which expects futures traits.
 
 use crate::{auth, parser, store::Store, CoreError, CoreResult};
 use async_imap::types::Fetch;
 use async_native_tls::TlsConnector;
+use futures::StreamExt;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::{mpsc, Mutex};
 use tokio::time::sleep;
+use tokio_util::compat::{Compat, TokioAsyncReadCompatExt};
 use tracing::{error, info, warn};
 
 #[derive(Debug, Clone)]
@@ -36,6 +43,9 @@ pub struct ImapWorker {
     store: Arc<Mutex<Store>>,
     events: mpsc::UnboundedSender<WorkerEvent>,
 }
+
+/// Convenient alias for the futures-compatible stream type used by async-imap.
+type FuturesStream = Compat<tokio::net::TcpStream>;
 
 impl ImapWorker {
     pub fn new(
@@ -66,35 +76,32 @@ impl ImapWorker {
     }
 
     async fn connect_and_idle(&self) -> CoreResult<()> {
+        // 1) Open the TCP connection with tokio.
         let tcp = tokio::net::TcpStream::connect((self.config.host.as_str(), self.config.port))
             .await
             .map_err(CoreError::from)?;
+        // 2) Bridge to futures::AsyncRead+Write via tokio-util compat.
+        let stream: FuturesStream = tcp.compat();
+        // 3) Wrap with TLS (async-native-tls speaks futures traits).
         let tls = TlsConnector::new();
         let tls_stream = tls
-            .connect(&self.config.host, tcp)
+            .connect(&self.config.host, stream)
             .await
             .map_err(|e| CoreError::Imap(format!("TLS: {e}")))?;
         let client = async_imap::Client::new(tls_stream);
 
-        // Authenticate
+        // 4) Authenticate.
         let mut session = if self.config.use_oauth {
             let tokens = auth::load_tokens(&self.config.account_id)?
                 .ok_or_else(|| CoreError::Auth("no tokens stored".into()))?;
-            // XOAUTH2 SASL string
             let sasl = format!(
                 "user={}\x01auth=Bearer {}\x01\x01",
                 self.config.user, tokens.access_token
             );
-            let mut session = client
-                .authenticate("XOAUTH2", &XOAuth2(sasl))
+            client
+                .authenticate("XOAUTH2", XOAuth2(sasl))
                 .await
-                .map_err(|(e, _)| CoreError::Imap(format!("XOAUTH2: {e}")))?;
-            // Probe basic IMAP
-            session
-                .capabilities()
-                .await
-                .map_err(|e| CoreError::Imap(format!("capabilities: {e}")))?;
-            session
+                .map_err(|(e, _)| CoreError::Imap(format!("XOAUTH2: {e}")))?
         } else {
             let pw = auth::load_password(&self.config.account_id)?
                 .ok_or_else(|| CoreError::Auth("no password stored".into()))?;
@@ -111,10 +118,10 @@ impl ImapWorker {
             .await
             .map_err(|e| CoreError::Imap(format!("select INBOX: {e}")))?;
 
-        // Initial fetch: last 50 messages.
+        // 5) Initial fetch: last 50 messages.
         self.fetch_recent(&mut session, 50).await?;
 
-        // IDLE loop with 25-minute timer (RFC 2177 recommendation).
+        // 6) IDLE loop with 25-minute timer (RFC 2177).
         loop {
             let mut idle = session.idle();
             idle.init().await.map_err(|e| CoreError::Imap(format!("idle init: {e}")))?;
@@ -136,9 +143,8 @@ impl ImapWorker {
         count: u32,
     ) -> CoreResult<()>
     where
-        S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send,
+        S: futures::AsyncRead + futures::AsyncWrite + Unpin + Send + std::fmt::Debug,
     {
-        // Range "<n>:*" on UID FETCH; in production we'd also use CONDSTORE here.
         let range = format!("{}:*", count.saturating_sub(1).max(1));
         let messages: Vec<Result<Fetch, _>> = session
             .uid_fetch(&range, "RFC822")
@@ -180,7 +186,7 @@ impl ImapWorker {
     }
 }
 
-// XOAUTH2 SASL helper
+// XOAUTH2 SASL helper. Implements the trait expected by async-imap::authenticate.
 struct XOAuth2(String);
 impl async_imap::Authenticator for XOAuth2 {
     type Response = String;
@@ -188,6 +194,3 @@ impl async_imap::Authenticator for XOAuth2 {
         self.0.clone()
     }
 }
-
-// Bring StreamExt in scope for `.collect` on the Stream returned by uid_fetch.
-use futures::StreamExt as _;

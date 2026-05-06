@@ -27,6 +27,7 @@ fn main() {
             commands::mark_read,
             commands::snooze,
             commands::send_mail,
+            commands::parse_raw,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

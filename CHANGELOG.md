@@ -5,6 +5,46 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning [Se
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-05-06
+
+### Changed
+- **rust-core compiles cleanly** for the first time. 16 → 0 cargo errors. Bridge uses `tokio_util::compat::TokioAsyncReadCompatExt` to convert tokio's TcpStream into the futures::AsyncRead/Write traits expected by async-imap. async-native-tls accepts the futures-stream.
+- async-imap Authenticator trait usage corrected (pass by value).
+- `teddy_mail_core` re-linked into `src-tauri/Cargo.toml` (was commented since v0.1.0).
+- `parse_raw` Tauri command is now a real implementation returning the parsed RFC822 mail.
+
+### Added
+- CONTRIBUTING.md: developer onboarding (Windows/macOS/Linux, conventions, release process).
+- PROJECT_STATE.md: comprehensive log of all 11 phases V0.1 → V0.5.
+
+### Tests
+- Cargo test rust-core: 4/4 passing.
+- Vitest: 111/111 passing.
+- TypeScript strict: 0 errors.
+- **115 tests verts total.**
+
+## [0.4.1] — 2026-05-06
+
+### Added
+- Quick reply chip suggestions (meeting / thanks / question / request / generic).
+- Composer minimize/restore.
+- Vacation responder (UI + 🌴 status indicator).
+- Atelier keyboard navigation (j/k/arrows + Enter to expand).
+
+## [0.4.0] — 2026-05-06
+
+### Added
+- **Vue Atelier**: editorial single-pane alternative. Hero card + category clusters in masonry. Click-to-expand inline, hover actions, time-of-day greeting.
+- Sidebar Classique / Atelier toggle.
+
+## [0.3.2] — 2026-05-06
+
+### Added
+- Reply All (Shift+R) with self-address dedup.
+- Saved view rename/delete from sidebar.
+- Mock new-mail simulator every 5 min (respects quiet hours).
+- Labels CRUD with colored chips on thread cards.
+
 ## [0.3.1] — 2026-05-06
 
 ### Added

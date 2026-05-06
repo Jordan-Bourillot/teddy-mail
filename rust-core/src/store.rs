@@ -3,7 +3,7 @@
 //! Schema is created on first open via `initialize`. Migrations live in a
 //! single `schema_version` row, applied in `migrate`.
 
-use crate::{parser::ParsedMail, CoreError, CoreResult};
+use crate::{parser::ParsedMail, CoreResult};
 use rusqlite::{params, Connection, OptionalExtension};
 use std::path::Path;
 

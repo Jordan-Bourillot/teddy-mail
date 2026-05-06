@@ -29,7 +29,17 @@ pub fn list_accounts() -> Vec<AccountSummary> {
     Vec::new()
 }
 
-const NOT_YET: &str = "Mail backend not yet integrated in V0.1.0 — coming in V0.2";
+// V0.5: rust-core is linked. We expose `parse_raw` as a real command that
+// returns ParsedMail; the heavy IMAP/SMTP operations are still gated behind
+// V0.6 (real account creation flow). Other operations remain stubbed for
+// now since they need a fully-initialised Store + Worker context.
+const NOT_YET: &str = "Mail sync not yet integrated — coming in V0.6 (rust-core compiles in V0.5).";
+
+#[tauri::command]
+pub fn parse_raw(raw: Vec<u8>) -> Result<serde_json::Value, String> {
+    let parsed = teddy_mail_core::parser::parse(&raw).map_err(|e| e.to_string())?;
+    serde_json::to_value(&parsed).map_err(|e| e.to_string())
+}
 
 #[tauri::command]
 pub fn open_store(_path: String, _passphrase: String) -> Result<(), String> {

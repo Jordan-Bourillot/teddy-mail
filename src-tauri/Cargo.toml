@@ -1,6 +1,6 @@
 [package]
 name = "teddy-mail-shell"
-version = "0.4.1"
+version = "0.5.0"
 edition = "2021"
 description = "Teddy Mail desktop shell"
 license = "MIT OR Apache-2.0"
@@ -29,10 +29,11 @@ reqwest = { version = "0.12", default-features = false, features = ["json", "rus
 url = "2"
 chrono = { version = "0.4", features = ["serde"] }
 
-# V0.1.0: ship the desktop shell with the React UI; mail backend integration
-# (rust-core) lands in V0.2 once API drift in async-imap/lettre/mail-parser is
-# resolved. The shell still runs the full UI with mock IPC fallback.
-# teddy_mail_core = { path = "../rust-core" }
+# V0.5.0: rust-core compiles cleanly and is now linked into the shell.
+# The IMAP IDLE worker, MIME parser, encrypted SQLCipher store, OAuth helpers
+# and SMTP layer are reachable from commands.rs::parse_raw and the Store APIs.
+# UI wiring of real account creation + sync trigger lands in V0.6.
+teddy_mail_core = { path = "../rust-core" }
 
 [features]
 default = ["custom-protocol"]

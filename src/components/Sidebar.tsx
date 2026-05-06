@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { AddAccount } from './AddAccount';
 import { Insights } from './Insights';
@@ -6,6 +6,7 @@ import { AccountsPanel } from './AccountsPanel';
 import { DraftsPanel } from './DraftsPanel';
 import { ScheduledPanel } from './ScheduledPanel';
 import { Avatar } from './Avatar';
+import { onOpenPanel } from '@/lib/panelStore';
 
 export function Sidebar() {
   const [showAddAccount, setShowAddAccount] = useState(false);
@@ -15,6 +16,17 @@ export function Sidebar() {
   const [showScheduled, setShowScheduled] = useState(false);
   const draftsCount = useStore((s) => s.drafts.length);
   const scheduledCount = useStore((s) => s.scheduled.length);
+
+  // Allow App-level shortcuts to open these panels via the event bus.
+  useEffect(() => {
+    return onOpenPanel((key) => {
+      if (key === 'drafts') setShowDrafts(true);
+      else if (key === 'scheduled') setShowScheduled(true);
+      else if (key === 'insights') setShowInsights(true);
+      else if (key === 'accounts') setShowAccounts(true);
+      else if (key === 'add-account') setShowAddAccount(true);
+    });
+  }, []);
   const accounts = useStore((s) => s.accounts);
   const folders = useStore((s) => s.folders);
   const savedViews = useStore((s) => s.savedViews);

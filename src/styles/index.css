@@ -162,6 +162,32 @@ button {
   border-radius: var(--radius);
 }
 
+/* ----- Print ----- */
+@media print {
+  /* Hide everything except the explicitly-marked print region */
+  body * {
+    visibility: hidden;
+  }
+  .print-region,
+  .print-region * {
+    visibility: visible;
+  }
+  .print-region {
+    position: absolute;
+    inset: 0;
+    padding: 24px;
+    background: white;
+    color: black;
+  }
+  .print-hide {
+    display: none !important;
+  }
+  /* Re-target some background-aware classes for paper */
+  .print-region a {
+    color: #1a4dbb;
+  }
+}
+
 /* ----- Utility ----- */
 .kbd {
   display: inline-flex;

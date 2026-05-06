@@ -3,6 +3,7 @@ import { useStore } from '@/lib/store';
 import { fileToAttachment, validateAttachment, formatSize, attachmentGlyph } from '@/lib/attachments';
 import { toggleWrap, toggleLinePrefix, insertLink } from '@/lib/markdown';
 import { tryExpandSlashCommand } from '@/lib/templates';
+import { computeTextStats, formatReadingTime } from '@/lib/textStats';
 import { TemplatePicker } from './TemplatePicker';
 
 export function Composer() {
@@ -371,13 +372,23 @@ export function Composer() {
       )}
 
       <footer className="flex items-center justify-between px-4 py-2 border-t border-border bg-surface-2 rounded-b-lg">
-        <div className="text-xs text-muted flex items-center gap-1.5">
-          <span className={['inline-block w-1.5 h-1.5 rounded-full transition', savedTick > 0 ? 'bg-success' : 'bg-muted/40'].join(' ')} />
-          {savedTick > 0
-            ? `Sauvegardé ${new Date(savedTick).toLocaleTimeString()}`
-            : 'Brouillon non sauvegardé'}
+        <div className="text-xs text-muted flex items-center gap-3">
+          <span className="flex items-center gap-1.5">
+            <span className={['inline-block w-1.5 h-1.5 rounded-full transition', savedTick > 0 ? 'bg-success' : 'bg-muted/40'].join(' ')} />
+            {savedTick > 0
+              ? `Sauvegardé ${new Date(savedTick).toLocaleTimeString()}`
+              : 'Brouillon non sauvegardé'}
+          </span>
+          {(() => {
+            const s = computeTextStats(draft.body);
+            return (
+              <span title={`${s.lines} ligne(s)`}>
+                {s.words} mot{s.words > 1 ? 's' : ''} · lecture {formatReadingTime(s.readingSeconds)}
+              </span>
+            );
+          })()}
           {attachmentWarning && (
-            <span className="ml-3 text-warning">⚠ Tu as mentionné une pièce jointe absente</span>
+            <span className="text-warning">⚠ Tu as mentionné une pièce jointe absente</span>
           )}
         </div>
         <div className="flex items-center gap-2">

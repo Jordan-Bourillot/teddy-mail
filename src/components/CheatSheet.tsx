@@ -52,6 +52,11 @@ export function CheatSheet() {
 
       { action: 'help', combo: '?', label: 'Afficher cette aide', group: 'Aide' },
       { action: 'help', combo: 'esc', label: 'Fermer la modale courante', group: 'Aide' },
+      { action: 'help', combo: 'g d', label: 'Brouillons', group: 'Navigation' },
+      { action: 'help', combo: 'g s', label: 'Programmés', group: 'Navigation' },
+      { action: 'help', combo: 'g i', label: 'Insights', group: 'Navigation' },
+      { action: 'help', combo: 'g a', label: 'Comptes / profil', group: 'Navigation' },
+      { action: 'help', combo: 'g n', label: 'Ajouter un compte', group: 'Navigation' },
     ];
   }, [profile]);
 

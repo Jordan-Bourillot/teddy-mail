@@ -17,6 +17,7 @@ import { applyTheme } from '@/lib/themes';
 import { applyReducedMotion } from '@/lib/sounds';
 import { getProfile, matches } from '@/lib/hotkeys';
 import { useIsNarrow } from '@/lib/useMediaQuery';
+import { emitOpenPanel } from '@/lib/panelStore';
 
 export function App() {
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding());
@@ -72,6 +73,22 @@ export function App() {
       if (e.key === '?' && !hasMod) {
         e.preventDefault();
         openCheat();
+        return;
+      }
+      // g d / g s / g i / g a → goto Drafts / Scheduled / Insights / Accounts (Gmail-style "g + key")
+      if (e.key.toLowerCase() === 'g' && !hasMod && !e.shiftKey) {
+        e.preventDefault();
+        const onSecond = (e2: KeyboardEvent) => {
+          window.removeEventListener('keydown', onSecond);
+          if (e2.key === 'd') emitOpenPanel('drafts');
+          else if (e2.key === 's') emitOpenPanel('scheduled');
+          else if (e2.key === 'i') emitOpenPanel('insights');
+          else if (e2.key === 'a') emitOpenPanel('accounts');
+          else if (e2.key === 'n') emitOpenPanel('add-account');
+        };
+        window.addEventListener('keydown', onSecond);
+        // Auto-clear after 2s if no second key.
+        setTimeout(() => window.removeEventListener('keydown', onSecond), 2000);
         return;
       }
       // Esc clears selection if any, before any other handler

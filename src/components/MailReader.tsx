@@ -42,7 +42,7 @@ export function MailReader() {
 
   return (
     <div className="flex-1 flex flex-col bg-surface min-w-0 md:min-w-[420px]">
-      <header className="h-12 px-4 flex items-center gap-2 border-b border-border shrink-0">
+      <header className="h-12 px-4 flex items-center gap-2 border-b border-border shrink-0 print-hide">
         <button onClick={onArchive} className="px-2.5 py-1 text-sm rounded hover:bg-surface-2 transition" title="Archiver (E)">
           Archiver
         </button>
@@ -75,13 +75,20 @@ export function MailReader() {
           {last.starred ? '★ Favori' : '☆ Favori'}
         </button>
         <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={() => window.print()}
+            className="px-2.5 py-1 text-sm rounded hover:bg-surface-2 transition"
+            title="Imprimer ce thread (Ctrl/Cmd+P)"
+          >
+            🖨
+          </button>
           <button onClick={onReply} className="px-3 py-1 text-sm rounded bg-accent text-white hover:opacity-90 transition" title="Répondre (R)">
             Répondre
           </button>
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto print-region">
         <div className="max-w-3xl mx-auto px-6 py-6">
           <h1 className="text-xl font-semibold mb-3 leading-snug">{last.subject}</h1>
 

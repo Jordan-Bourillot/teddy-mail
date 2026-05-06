@@ -36,6 +36,8 @@ export function Sidebar() {
   const focusMode = useStore((s) => s.focusMode);
   const toggleFocus = useStore((s) => s.toggleFocusMode);
   const setSearch = useStore((s) => s.setSearchQuery);
+  const viewMode = useStore((s) => s.prefs.viewMode);
+  const updatePrefs = useStore((s) => s.updatePrefs);
   const pendingSnoozed = useStore((s) =>
     s.mails.filter((m) => m.snoozedUntil && new Date(m.snoozedUntil) > new Date()).length,
   );
@@ -47,7 +49,7 @@ export function Sidebar() {
         <div className="text-xs text-muted mt-0.5">calme · souverain · à toi</div>
       </div>
 
-      <div className="px-3 pb-3">
+      <div className="px-3 pb-3 space-y-2">
         <button
           type="button"
           onClick={() => openCompose()}
@@ -55,6 +57,36 @@ export function Sidebar() {
         >
           + Écrire un mail
         </button>
+        <div
+          role="group"
+          aria-label="Mode d'affichage"
+          className="flex bg-surface-2 rounded p-0.5 text-xs"
+        >
+          <button
+            onClick={() => updatePrefs({ viewMode: 'classic' })}
+            className={[
+              'flex-1 px-2 py-1 rounded transition',
+              viewMode === 'classic'
+                ? 'bg-bg text-text font-medium shadow-sm'
+                : 'text-muted hover:text-text',
+            ].join(' ')}
+            title="Vue classique : 3 colonnes"
+          >
+            Classique
+          </button>
+          <button
+            onClick={() => updatePrefs({ viewMode: 'atelier' })}
+            className={[
+              'flex-1 px-2 py-1 rounded transition',
+              viewMode === 'atelier'
+                ? 'bg-bg text-text font-medium shadow-sm'
+                : 'text-muted hover:text-text',
+            ].join(' ')}
+            title="Vue atelier : éditoriale et calme"
+          >
+            Atelier
+          </button>
+        </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 text-sm">

@@ -13,6 +13,7 @@ import { CheatSheet } from './components/CheatSheet';
 import { UpdateChecker } from './components/UpdateChecker';
 import { ScheduledSendDispatcher } from './components/ScheduledSendDispatcher';
 import { NewMailSimulator } from './components/NewMailSimulator';
+import { AtelierView } from './components/AtelierView';
 import { SettingsButton } from './components/SettingsPanel';
 import { applyTheme } from '@/lib/themes';
 import { applyReducedMotion } from '@/lib/sounds';
@@ -287,8 +288,10 @@ export function App() {
           </>
         )}
 
-        {/* Main panes: side-by-side on wide, stacked single-pane on narrow */}
-        {isNarrow ? (
+        {/* Main pane(s): atelier mode = single editorial scroll, classic = 2 panes */}
+        {prefs.viewMode === 'atelier' ? (
+          <AtelierView />
+        ) : isNarrow ? (
           selectedThreadId ? (
             <MailReader />
           ) : (

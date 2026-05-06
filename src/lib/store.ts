@@ -43,6 +43,7 @@ const defaultPrefs: UserPreferences = {
   keyboardProfile: 'teddy',
   reducedMotion: 'auto',
   soundPack: 'off',
+  viewMode: 'classic',
 };
 
 const defaultViews: SavedView[] = [

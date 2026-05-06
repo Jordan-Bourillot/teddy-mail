@@ -69,7 +69,7 @@ export const ipc = {
 // ---------------- mocks (web fallback) ----------------
 
 const mocks: Record<string, (args: AnyArgs) => unknown> = {
-  greet: () => 'Pite Lafe Mail v0.1.0 (web preview)',
+  greet: () => 'Teddy Mail v0.1.0 (web preview)',
   is_store_open: () => true,
   list_accounts: () => [],
   search: ({ query }: AnyArgs) => {

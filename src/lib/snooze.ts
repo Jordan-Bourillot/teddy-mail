@@ -15,6 +15,18 @@ function setHours(d: Date, h: number, m = 0): Date {
   return out;
 }
 
+/**
+ * Set time to today at h:m, but if that's already past, roll to tomorrow.
+ * Used by the "tonight" preset so it always resolves to a future moment.
+ */
+function setHoursOrNextDay(h: number, m = 0): Date {
+  const out = setHours(new Date(), h, m);
+  if (out.getTime() <= Date.now()) {
+    out.setDate(out.getDate() + 1);
+  }
+  return out;
+}
+
 function nextWeekday(from: Date, weekday: number): Date {
   const out = new Date(from);
   const diff = (weekday + 7 - out.getDay()) % 7 || 7;
@@ -26,7 +38,7 @@ export const snoozePresets: SnoozeOption[] = [
   {
     preset: 'tonight',
     label: 'Ce soir 18h',
-    resolveAt: () => setHours(new Date(), 18),
+    resolveAt: () => setHoursOrNextDay(18),
   },
   {
     preset: 'tomorrow',

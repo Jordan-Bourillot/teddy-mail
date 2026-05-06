@@ -1,4 +1,4 @@
-// Pite Lafe Mail desktop shell, V0.1.0.
+// Teddy Mail desktop shell, V0.1.0.
 // Hosts the React UI in a Tauri webview. Mail backend (rust-core) is decoupled
 // from this build and will be wired in V0.2 after API drift fixes.
 
@@ -8,7 +8,7 @@ mod commands;
 
 fn main() {
     init_logging();
-    tracing::info!("Pite Lafe Mail shell starting (v{})", env!("CARGO_PKG_VERSION"));
+    tracing::info!("Teddy Mail shell starting (v{})", env!("CARGO_PKG_VERSION"));
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())

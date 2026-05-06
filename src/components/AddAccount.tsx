@@ -201,7 +201,7 @@ export function AddAccount({ onClose }: AddAccountProps) {
           {stage === 'oauth-config' && (
             <>
               <p className="text-sm text-muted mb-3">
-                Colle ton <strong>client_id</strong> OAuth. Pite Lafe ne contient aucun secret
+                Colle ton <strong>client_id</strong> OAuth. Teddy ne contient aucun secret
                 propriétaire — chaque utilisateur enregistre sa propre app pour garder le contrôle.
               </p>
               <Field label="Client ID">
@@ -292,7 +292,7 @@ export function AddAccount({ onClose }: AddAccountProps) {
           {stage === 'imap-form' && (
             <>
               <p className="text-sm text-muted mb-3">
-                Saisis tes paramètres IMAP/SMTP. Pite Lafe détecte les fournisseurs courants.
+                Saisis tes paramètres IMAP/SMTP. Teddy détecte les fournisseurs courants.
               </p>
 
               <Field label="Adresse mail">

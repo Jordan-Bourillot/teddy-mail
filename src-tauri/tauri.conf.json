@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0",
-  "productName": "Pite Lafe Mail",
-  "version": "0.1.0",
-  "identifier": "studio.triskell.pite-lafe-mail",
+  "productName": "Teddy Mail",
+  "version": "0.1.1",
+  "identifier": "studio.triskell.teddy-mail",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:5173",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Pite Lafe Mail",
+        "title": "Teddy Mail",
         "width": 1280,
         "height": 820,
         "minWidth": 800,
@@ -32,6 +32,6 @@
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png", "icons/icon.ico"],
     "category": "Productivity",
     "shortDescription": "Calm, sovereign, customizable mail client",
-    "longDescription": "Pite Lafe Mail: calm, sovereign, deeply customizable. Multi-account IMAP/JMAP, on-device classification, tracker blocking, encrypted local store."
+    "longDescription": "Teddy Mail: calm, sovereign, deeply customizable. Multi-account IMAP/JMAP, on-device classification, tracker blocking, encrypted local store."
   }
 }

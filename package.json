@@ -1,9 +1,9 @@
 {
-  "name": "pite-lafe-mail",
+  "name": "teddy-mail",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
-  "description": "Pite Lafe Mail - calm, sovereign, customizable mail client",
+  "description": "Teddy Mail - calm, sovereign, customizable mail client",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

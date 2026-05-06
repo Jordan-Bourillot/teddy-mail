@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 #[tauri::command]
 pub fn greet() -> String {
-    format!("Pite Lafe Mail v{}", env!("CARGO_PKG_VERSION"))
+    format!("Teddy Mail v{}", env!("CARGO_PKG_VERSION"))
 }
 
 #[tauri::command]

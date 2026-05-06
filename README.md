@@ -1,4 +1,4 @@
-# Pite Lafe Mail
+# Teddy Mail
 
 Client mail calme, souverain, profondément personnalisable.
 
@@ -11,7 +11,7 @@ Client mail calme, souverain, profondément personnalisable.
 - ProtonMail = chiffrement austère.
 - Hey = workflow opinionné, peu personnalisable.
 
-Pite Lafe vise le créneau **personnalisation profonde + plaisir d'usage + souveraineté des données**.
+Teddy vise le créneau **personnalisation profonde + plaisir d'usage + souveraineté des données**.
 
 ## Stack
 
@@ -45,7 +45,7 @@ Couvre : classification (smartSort), threading JWZ, recherche DSL, blocage trace
 ## Structure
 
 ```
-pite_lafe_mail/
+teddy_mail/
 ├── src/
 │   ├── App.tsx                # Shell 3 colonnes
 │   ├── components/            # Sidebar, MailList, MailReader, Composer, CommandPalette, StatusBar, Toast, SettingsPanel, Avatar
@@ -81,7 +81,7 @@ pite_lafe_mail/
 - Compositeur avec auto-save, alerte pièce jointe oubliée, raccourci Cmd+Entrée.
 - Palette de commandes (Cmd+K) avec actions et résultats mêlés.
 - 6 thèmes (clair, sombre, sépia, solarized, contraste, nocturne) + densité (compact/cozy/spacious) + taille de police.
-- 4 profils clavier (pite, gmail, outlook, mutt).
+- 4 profils clavier (teddy, gmail, outlook, mutt).
 - Mode focus.
 - Statut bas avec compteurs.
 

@@ -6,8 +6,8 @@ function ev(key: string, opts: Partial<KeyboardEventInit> = {}): KeyboardEvent {
 }
 
 describe('hotkeys', () => {
-  it('pite profile maps compose to mod+n', () => {
-    const p = getProfile('pite');
+  it('teddy profile maps compose to mod+n', () => {
+    const p = getProfile('teddy');
     expect(p.compose).toBe('mod+n');
   });
 

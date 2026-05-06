@@ -1,9 +1,21 @@
 # Changelog
 
-All notable changes to Pite Lafe Mail are documented here.
+All notable changes to Teddy Mail are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning [SemVer](https://semver.org).
 
 ## [Unreleased]
+
+## [0.1.1] — 2026-05-06
+
+### Changed
+- **Renamed product to Teddy Mail** (was Pite Lafe Mail).
+  - Bundle id: `studio.triskell.teddy-mail`
+  - Window title, npm package, Rust crates, all UI strings updated.
+  - Default keyboard profile renamed `pite` → `teddy`.
+  - localStorage keys renamed; first-run users on upgrade lose preferences (acceptable: V0.1.0 had no real users yet).
+
+### Fixed
+- `snooze.ts` "Tonight 18h" preset now rolls to tomorrow if 18h has already passed today (it previously returned a past date, which broke the future-only invariant).
 
 ## [0.1.0] — 2026-05-06
 
@@ -28,7 +40,7 @@ First public release.
 - Save current search as a sidebar view in one click
 - Command palette (Cmd+K) mixing actions and mail results
 - Cheat sheet (?) listing every shortcut, filterable, grouped
-- 4 keyboard profiles (pite, gmail, outlook, mutt) with full per-action remap
+- 4 keyboard profiles (teddy, gmail, outlook, mutt) with full per-action remap
 - Insights view: weekly volume, trend, trackers blocked, time saved, top senders, category breakdown
 
 #### Personalization

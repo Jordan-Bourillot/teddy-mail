@@ -61,10 +61,10 @@ export async function completeFlow(
 
 /**
  * The redirect URI strategy: in desktop, Tauri can register a deep link
- * scheme (`pitelafe://oauth-callback`) and listen via the deep-link plugin.
+ * scheme (`teddymail://oauth-callback`) and listen via the deep-link plugin.
  * For now we expose the helper as documentation; the wiring happens once
  * the deep-link plugin is added.
  */
-export const desktopRedirectUri = 'pitelafe://oauth-callback';
+export const desktopRedirectUri = 'teddymail://oauth-callback';
 export const localLoopbackRedirectUri = (port: number) =>
   `http://127.0.0.1:${port}/callback`;

@@ -20,10 +20,10 @@ export type HotkeyAction =
   | 'toggleFocus'
   | 'cycleAccount';
 
-export type KeyboardProfile = 'pite' | 'gmail' | 'outlook' | 'mutt';
+export type KeyboardProfile = 'teddy' | 'gmail' | 'outlook' | 'mutt';
 
 const profiles: Record<KeyboardProfile, Record<HotkeyAction, string>> = {
-  pite: {
+  teddy: {
     compose: 'mod+n',
     reply: 'r',
     replyAll: 'shift+r',

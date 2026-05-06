@@ -36,7 +36,7 @@ const defaultPrefs: UserPreferences = {
   swipeLeft: 'archive',
   swipeRight: 'snooze',
   notificationsEnabled: true,
-  keyboardProfile: 'pite',
+  keyboardProfile: 'teddy',
   reducedMotion: 'auto',
   soundPack: 'off',
 };
@@ -47,7 +47,7 @@ const defaultViews: SavedView[] = [
   { id: 'v_unread', name: 'Non lus', query: 'is:unread' },
 ];
 
-const PREFS_KEY = 'pite-lafe-prefs-v1';
+const PREFS_KEY = 'teddy-mail-prefs-v1';
 
 function loadPrefs(): UserPreferences {
   try {

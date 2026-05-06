@@ -99,9 +99,9 @@ export const mockMails: Mail[] = [
     to: [{ email: 'j.lafe@triskell.studio' }],
     cc: [],
     bcc: [],
-    subject: '[triskell/pite] PR #283 needs review',
+    subject: '[teddy-mail] PR #283 needs review',
     bodyText:
-      "A pull request requires your review:\n\nRefactor: extract IMAP sync into Tauri command\n\nView on GitHub: https://github.com/triskell/pite/pull/283",
+      "A pull request requires your review:\n\nRefactor: extract IMAP sync into Tauri command\n\nView on GitHub: https://github.com/teddy-mail/pull/283",
     receivedAt: hours(4),
     read: false,
     starred: true,

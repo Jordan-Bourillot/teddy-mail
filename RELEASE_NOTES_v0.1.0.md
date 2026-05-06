@@ -1,4 +1,4 @@
-# Pite Lafe Mail v0.1.0
+# Teddy Mail v0.1.0
 
 First public release. Calm, sovereign, deeply customizable mail client for desktop.
 
@@ -24,7 +24,7 @@ You cannot yet:
 ### UI
 - 3-column desktop layout, fully responsive (single-pane below 900 px)
 - 6 themes (light, dark, sepia, solarized, contrast, nocturne) with live preview
-- 4 keyboard profiles (pite, gmail, outlook, mutt)
+- 4 keyboard profiles (teddy, gmail, outlook, mutt)
 - Multi-select with bulk archive/snooze/delete
 - Cheat sheet (?), command palette (Cmd+K), insights view
 
@@ -42,7 +42,7 @@ You cannot yet:
 
 Download the appropriate file for your OS from the assets below.
 
-- **Windows**: `Pite Lafe Mail_0.1.0_x64-setup.exe` (NSIS installer) or `_0.1.0_x64_en-US.msi`
+- **Windows**: `Teddy Mail_0.1.0_x64-setup.exe` (NSIS installer) or `_0.1.0_x64_en-US.msi`
 - **macOS**: `.dmg` — coming via GitHub Actions release workflow
 - **Linux**: `.AppImage` or `.deb` — coming via GitHub Actions release workflow
 
@@ -58,7 +58,7 @@ Download the appropriate file for your OS from the assets below.
 
 ## Repo
 
-- Source: https://github.com/Jordan-Bourillot/pite-lafe-mail
+- Source: https://github.com/Jordan-Bourillot/teddy-mail
 - Architecture details: [ARCHITECTURE.md](ARCHITECTURE.md)
 - Backlog and known limitations: [BACKLOG.md](BACKLOG.md)
 - Detailed state: [PROJECT_STATE.md](PROJECT_STATE.md)

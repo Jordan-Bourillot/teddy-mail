@@ -4,7 +4,7 @@ import { themeOptions, applyTheme } from '@/lib/themes';
 import { describeCombo, getProfile } from '@/lib/hotkeys';
 import type { ThemeName } from '@/types';
 
-const ONBOARDING_KEY = 'pite-lafe-onboarded-v1';
+const ONBOARDING_KEY = 'teddy-mail-onboarded-v1';
 
 export function shouldShowOnboarding(): boolean {
   try {
@@ -37,7 +37,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       <div className="w-[640px] max-w-[calc(100vw-2rem)] bg-surface border border-border rounded-lg shadow-xl overflow-hidden">
         <header className="px-6 py-4 border-b border-border flex items-center justify-between">
           <div>
-            <div className="text-sm font-semibold tracking-tight">Pite Lafe Mail</div>
+            <div className="text-sm font-semibold tracking-tight">Teddy Mail</div>
             <div className="text-xs text-muted">configuration en 90 secondes</div>
           </div>
           <Steps current={step} total={3} />

@@ -1,4 +1,4 @@
-// Pite Lafe Mail - core domain types
+// Teddy Mail - core domain types
 // All IDs are opaque strings to allow swap to UUID/server IDs without refactor.
 
 export type AccountId = string;
@@ -126,7 +126,7 @@ export interface UserPreferences {
   swipeRight: SwipeAction;
   notificationsEnabled: boolean;
   quietHours?: { start: string; end: string }; // "HH:MM"
-  keyboardProfile: 'pite' | 'gmail' | 'outlook' | 'mutt';
+  keyboardProfile: 'teddy' | 'gmail' | 'outlook' | 'mutt';
   reducedMotion: 'auto' | 'always' | 'never';
   soundPack: 'off' | 'subtle' | 'crisp';
 }

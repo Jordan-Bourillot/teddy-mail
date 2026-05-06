@@ -53,7 +53,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: pite-lafe-mail-${{ matrix.target }}
+          name: teddy-mail-${{ matrix.target }}
           path: src-tauri/target/${{ matrix.target }}/release/bundle/**/*
           retention-days: 7
 

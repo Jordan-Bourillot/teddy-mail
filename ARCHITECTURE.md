@@ -1,8 +1,8 @@
-# Architecture — Pite Lafe Mail
+# Architecture — Teddy Mail
 
 ## L'app : web aujourd'hui, desktop bientôt
 
-Pite Lafe est conçu comme une **application desktop native**, mais qui se développe et se prévisualise dans un navigateur web.
+Teddy est conçu comme une **application desktop native**, mais qui se développe et se prévisualise dans un navigateur web.
 
 ### Trois modes d'exécution depuis le même code
 
@@ -48,8 +48,8 @@ Nécessite Rust installé (rustup.rs, ~5 min).
 
 - Compile en release, signe les binaires, génère les installateurs.
 - **Sortie** :
-  - Windows : `Pite Lafe Mail-0.1.0-setup.exe` + `.msi` (~12 Mo)
-  - macOS : `Pite Lafe Mail.app` + `.dmg` (~8 Mo, signé/notarisé pour distribution)
+  - Windows : `Teddy Mail-0.1.0-setup.exe` + `.msi` (~12 Mo)
+  - macOS : `Teddy Mail.app` + `.dmg` (~8 Mo, signé/notarisé pour distribution)
   - Linux : `.AppImage` portable + `.deb` (~10 Mo)
 - L'utilisateur final installe ça → l'app apparaît dans le menu démarrer / Dock / launcher → fenêtre native, aucun navigateur visible.
 
@@ -99,7 +99,7 @@ src/
     ├── insights.ts          # Calcul stats locales
     ├── sounds.ts            # WebAudio embarqué + reduced motion
     ├── themes.ts            # Palette + densité + initiales avatar
-    ├── hotkeys.ts           # 4 profils clavier (pite/gmail/outlook/mutt)
+    ├── hotkeys.ts           # 4 profils clavier (teddy/gmail/outlook/mutt)
     ├── imapPresets.ts       # 8 providers IMAP/SMTP courants
     ├── useMediaQuery.ts     # Responsive hook
     └── mockData.ts          # Données démo

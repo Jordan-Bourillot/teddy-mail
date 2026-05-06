@@ -9,7 +9,7 @@ describe('isTrackerUrl', () => {
     expect(isTrackerUrl('https://example.com/pixel?id=123')).toBe(true);
   });
   it('does not flag normal URLs', () => {
-    expect(isTrackerUrl('https://github.com/triskell/pite')).toBe(false);
+    expect(isTrackerUrl('https://github.com/teddy-mail')).toBe(false);
   });
   it('handles malformed URLs without throwing', () => {
     expect(isTrackerUrl('not a url')).toBe(false);

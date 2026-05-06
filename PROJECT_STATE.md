@@ -1,10 +1,10 @@
-# PROJECT_STATE — Pite Lafe Mail
+# PROJECT_STATE — Teddy Mail
 
 État courant : **V0.1.0 — desktop shell construit (.exe Windows), backend mail décorrelé pour V0.2.**
 
 ## Pipeline V0.1.0 réalisé
 
-- ✅ Repo GitHub public : https://github.com/Jordan-Bourillot/pite-lafe-mail
+- ✅ Repo GitHub public : https://github.com/Jordan-Bourillot/teddy-mail
 - ✅ Toolchain installée : Rust 1.95, VS Build Tools 2022, Windows SDK 10/11, Strawberry Perl
 - ✅ React UI complet packagé (`npm run build` → 360 ko gzippé 112 ko)
 - ✅ Shell Tauri 2 compilé en release (Windows x64)
@@ -67,13 +67,13 @@ Aucune. Toutes étapes du plan livrées.
 
 1. **Compiler le shell Tauri** : `cd src-tauri && cargo build`. Nécessite Rust toolchain. Première compilation ~5 min.
 2. **Brancher la sync IMAP réelle** : une fois `cargo build` ok, lancer `npm run tauri:dev`, le store SQLite chiffré sera créé dans le `app_data_dir` OS, et le worker IDLE peut être lancé depuis une command.
-3. **OAuth réel** : enregistrer une app dans Google Cloud Console (Gmail) ou Microsoft Entra (Outlook), récupérer le client_id, le coller dans l'écran AddAccount. La redirect URI `pitelafe://oauth-callback` nécessite l'enregistrement d'un deep-link via `tauri-plugin-deep-link` (à ajouter en V1.5).
+3. **OAuth réel** : enregistrer une app dans Google Cloud Console (Gmail) ou Microsoft Entra (Outlook), récupérer le client_id, le coller dans l'écran AddAccount. La redirect URI `teddymail://oauth-callback` nécessite l'enregistrement d'un deep-link via `tauri-plugin-deep-link` (à ajouter en V1.5).
 4. **Migration Fuse.js → SQLite FTS5** : remplacer `searchMails` côté TS par `ipc.search()` quand `isStoreOpen()` est vrai.
 5. **Mobile** : factoriser les modules TS partageables (logique pure, pas de DOM) puis bridger via React Native + UniFFI Rust.
 
 ## Décisions structurantes
 
-- **No proprietary OAuth secrets in Pite Lafe** → chaque utilisateur enregistre sa propre app OAuth, en garde le contrôle. Évite les rate limits partagés et la dépendance à un compte centralisé. Friction onboarding +1 min, ratio acceptable pour la cible "souverains".
+- **No proprietary OAuth secrets in Teddy** → chaque utilisateur enregistre sa propre app OAuth, en garde le contrôle. Évite les rate limits partagés et la dépendance à un compte centralisé. Friction onboarding +1 min, ratio acceptable pour la cible "souverains".
 - **Web fallback systématique** sur l'IPC : `ipc.ts` détecte `window.__TAURI_INTERNALS__`, sinon route vers des mocks. Le mode `npm run dev` reste fonctionnel pour développement et démo.
 - **PKCE côté Rust** : code_challenge SHA256 calculé dans la command `start_oauth`, pas dans le renderer. Token exchange aussi côté Rust pour ne jamais exposer le refresh token au JS.
 - **Onboarding non bloquant** : "Passer la configuration" disponible à tout moment, l'app marche en données fictives sans compte.

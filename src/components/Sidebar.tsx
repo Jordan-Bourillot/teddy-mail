@@ -22,7 +22,7 @@ export function Sidebar() {
   return (
     <aside className="w-60 shrink-0 bg-surface border-r border-border flex flex-col">
       <div className="p-4">
-        <div className="text-base font-semibold tracking-tight">Pite Lafe Mail</div>
+        <div className="text-base font-semibold tracking-tight">Teddy Mail</div>
         <div className="text-xs text-muted mt-0.5">calme · souverain · à toi</div>
       </div>
 

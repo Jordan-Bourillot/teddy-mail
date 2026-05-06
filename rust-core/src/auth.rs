@@ -1,13 +1,13 @@
 //! OAuth2 (PKCE) and credential storage in OS keyring.
 //!
 //! Each account has a stable id (`acc_<uuid>`). Tokens live in the OS keyring
-//! under `pite-lafe-mail:<account_id>:access` and `:refresh`.
+//! under `teddy-mail:<account_id>:access` and `:refresh`.
 
 use crate::{CoreError, CoreResult};
 use keyring::Entry;
 use serde::{Deserialize, Serialize};
 
-const SERVICE: &str = "pite-lafe-mail";
+const SERVICE: &str = "teddy-mail";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OAuthTokens {

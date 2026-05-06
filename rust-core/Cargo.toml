@@ -1,8 +1,8 @@
 [package]
-name = "pite_lafe_core"
+name = "teddy_mail_core"
 version = "0.1.0"
 edition = "2021"
-description = "Pite Lafe Mail core: IMAP/JMAP sync, encrypted store, MIME parsing"
+description = "Teddy Mail core: IMAP/JMAP sync, encrypted store, MIME parsing"
 license = "MIT OR Apache-2.0"
 
 [lib]

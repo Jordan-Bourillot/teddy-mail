@@ -1,8 +1,8 @@
 [package]
-name = "pite-lafe-mail-shell"
-version = "0.1.0"
+name = "teddy-mail-shell"
+version = "0.1.1"
 edition = "2021"
-description = "Pite Lafe Mail desktop shell"
+description = "Teddy Mail desktop shell"
 license = "MIT OR Apache-2.0"
 
 [build-dependencies]
@@ -30,7 +30,7 @@ chrono = { version = "0.4", features = ["serde"] }
 # V0.1.0: ship the desktop shell with the React UI; mail backend integration
 # (rust-core) lands in V0.2 once API drift in async-imap/lettre/mail-parser is
 # resolved. The shell still runs the full UI with mock IPC fallback.
-# pite_lafe_core = { path = "../rust-core" }
+# teddy_mail_core = { path = "../rust-core" }
 
 [features]
 default = ["custom-protocol"]

@@ -1,4 +1,4 @@
-//! Pite Lafe Mail core library.
+//! Teddy Mail core library.
 //!
 //! Public surface that the Tauri shell calls into. Everything async, every
 //! fallible operation returns a typed `CoreError`.

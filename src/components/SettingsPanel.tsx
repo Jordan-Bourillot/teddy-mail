@@ -145,7 +145,7 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
                 }
                 className="bg-surface-2 px-2 py-1 rounded border border-border text-sm"
               >
-                <option value="pite">Pite Lafe (par défaut)</option>
+                <option value="teddy">Teddy (par défaut)</option>
                 <option value="gmail">Gmail</option>
                 <option value="outlook">Outlook</option>
                 <option value="mutt">Mutt / Vim</option>

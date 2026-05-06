@@ -30,7 +30,7 @@ import { scheduleSend, cancel as cancelSend, listPending } from './undoSend';
 import { loadTemplates, saveTemplates } from './templates';
 
 const defaultPrefs: UserPreferences = {
-  theme: 'light',
+  theme: 'triskell-light',
   density: 'cozy',
   fontSize: 14,
   unifiedInbox: true,

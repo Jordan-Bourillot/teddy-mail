@@ -8,7 +8,23 @@
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
-/* ----- Theme: Light ----- */
+/* ----- Theme: Triskell Light (default, brand colors) ----- */
+[data-theme='triskell-light'] {
+  /* Surfaces directly from the Triskell Lanceur palette: gris-bleu très clair */
+  --color-bg: 233 236 242;          /* #e9ecf2 */
+  --color-surface: 255 255 255;     /* #ffffff */
+  --color-surface-2: 243 244 248;   /* #f3f4f8 */
+  --color-border: 212 215 224;      /* #d4d7e0 */
+  --color-text: 20 23 31;           /* #14171f */
+  --color-muted: 111 116 132;       /* #6f7484 */
+  /* Triskell brand : indigo principal pour CTA */
+  --color-accent: 124 127 233;      /* #7c7fe9 */
+  --color-success: 74 222 128;      /* #4ade80 */
+  --color-warning: 249 115 22;      /* #f97316 — orange Triskell */
+  --color-danger: 239 68 68;        /* #ef4444 */
+}
+
+/* ----- Theme: Light (neutre, pour ceux qui veulent un blanc pur) ----- */
 [data-theme='light'] {
   --color-bg: 252 252 251;
   --color-surface: 255 255 255;

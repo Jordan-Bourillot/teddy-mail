@@ -4,7 +4,8 @@
 import type { Density, ThemeName } from '@/types';
 
 export const themeOptions: { value: ThemeName; label: string; hint: string }[] = [
-  { value: 'light', label: 'Clair', hint: 'lecture longue, journée' },
+  { value: 'triskell-light', label: 'Triskell clair', hint: 'palette officielle Triskell Studio (indigo)' },
+  { value: 'light', label: 'Clair neutre', hint: 'blanc pur, neutre' },
   { value: 'dark', label: 'Sombre', hint: 'soirée, peu de lumière' },
   { value: 'sepia', label: 'Sépia', hint: 'lecture confortable' },
   { value: 'solarized', label: 'Solarized', hint: 'palette équilibrée' },

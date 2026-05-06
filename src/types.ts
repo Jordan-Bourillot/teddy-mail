@@ -113,7 +113,14 @@ export interface Label {
   color: string;
 }
 
-export type ThemeName = 'light' | 'dark' | 'sepia' | 'solarized' | 'contrast' | 'nocturne';
+export type ThemeName =
+  | 'triskell-light'
+  | 'light'
+  | 'dark'
+  | 'sepia'
+  | 'solarized'
+  | 'contrast'
+  | 'nocturne';
 export type Density = 'compact' | 'cozy' | 'spacious';
 
 export interface UserPreferences {

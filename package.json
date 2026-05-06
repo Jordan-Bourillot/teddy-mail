@@ -1,7 +1,7 @@
 {
   "name": "teddy-mail",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "module",
   "description": "Teddy Mail - calm, sovereign, customizable mail client",
   "scripts": {

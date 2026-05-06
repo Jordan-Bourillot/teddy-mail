@@ -43,7 +43,43 @@ export function StatusBar() {
         <button onClick={openPalette} className="hover:text-text transition">
           Recherche <span className="kbd">⌘K</span>
         </button>
+        <TriskellLink />
       </div>
     </footer>
+  );
+}
+
+function TriskellLink() {
+  const open = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const url = 'https://triskell.studio';
+    // In Tauri desktop, prefer the system browser; in web, open a tab.
+    if (typeof window !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = window as any;
+      if (w.__TAURI_INTERNALS__) {
+        import('@tauri-apps/plugin-shell').then((m) => m.open(url));
+        return;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+  return (
+    <a
+      href="https://triskell.studio"
+      onClick={open}
+      title="Une création Triskell Studio"
+      className="flex items-center gap-1.5 hover:text-text transition group"
+    >
+      <span
+        className="inline-block w-2 h-2 rounded-full"
+        style={{
+          background:
+            'linear-gradient(135deg, #6366f1 0%, #a78bfa 50%, #f97316 100%)',
+        }}
+        aria-hidden
+      />
+      <span className="group-hover:underline">Triskell Studio</span>
+    </a>
   );
 }

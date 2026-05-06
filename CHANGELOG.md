@@ -5,7 +5,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning [Se
 
 ## [Unreleased]
 
-## [0.2.0] — 2026-05-06
+## [0.2.1] — 2026-05-06
+
+### Added
+- **Drag-and-drop attachments** in the Composer. Drop files anywhere on the compose window, or click 📎 to pick. Visual cue while dragging.
+- Attachment chips: filename, size, image preview thumbnail (for PNG/JPG/WebP/GIF under 1.5 MB), one-click remove.
+- Per-file limit: 25 MB. Per-mail total: 50 MB. Validation messages via toast.
+- Send confirmation now mentions attachments count: "Envoyé avec 2 pièce(s) jointe(s)".
+- 11 new Vitest tests covering size formatting, validation, and glyph picking. **Total: 58 tests passing.**
+
+
 
 ### Added
 - **Profile editor** with per-account photo upload (JPG/PNG/WebP, compressed to 320px / 250KB max), display name, accent color, and signature editor with live preview.

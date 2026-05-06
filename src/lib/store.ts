@@ -145,6 +145,8 @@ export interface AppState {
   openCompose: (replyTo?: Mail) => void;
   closeCompose: () => void;
   updateDraft: (patch: Partial<Draft>) => void;
+  addAttachment: (a: import('@/types').AttachmentDraft) => void;
+  removeAttachment: (id: string) => void;
   sendDraft: () => void;
   undoSend: () => void;
 
@@ -377,6 +379,7 @@ export const useStore = create<AppState>((set, get) => ({
       body: replyTo ? `\n\n--- Le ${new Date(replyTo.receivedAt).toLocaleString()}, ${replyTo.from.name ?? replyTo.from.email} a écrit :\n> ${replyTo.bodyText.split('\n').join('\n> ')}` : '',
       ...(replyTo ? { inReplyTo: replyTo.id } : {}),
       updatedAt: new Date().toISOString(),
+      attachments: [],
     };
     set({ composeOpen: true, composeDraft: draft });
   },
@@ -396,23 +399,50 @@ export const useStore = create<AppState>((set, get) => ({
     set({ composeDraft: { ...cur, ...patch, updatedAt: new Date().toISOString() } });
   },
 
+  addAttachment: (a) => {
+    const cur = get().composeDraft;
+    if (!cur) return;
+    set({
+      composeDraft: {
+        ...cur,
+        attachments: [...cur.attachments, a],
+        updatedAt: new Date().toISOString(),
+      },
+    });
+  },
+
+  removeAttachment: (id) => {
+    const cur = get().composeDraft;
+    if (!cur) return;
+    set({
+      composeDraft: {
+        ...cur,
+        attachments: cur.attachments.filter((a) => a.id !== id),
+        updatedAt: new Date().toISOString(),
+      },
+    });
+  },
+
   sendDraft: () => {
     const draft = get().composeDraft;
     if (!draft) return;
     const { undoSendSeconds } = get().prefs;
     set({ composeOpen: false, composeDraft: null });
 
+    const attCount = draft.attachments.length;
+    const attSuffix = attCount > 0 ? ` avec ${attCount} pièce(s) jointe(s)` : '';
+
     if (undoSendSeconds === 0) {
       // Immediate send path
       playSound('send', get().prefs.soundPack);
-      get().showToast('Envoyé');
+      get().showToast(`Envoyé${attSuffix}`);
       return;
     }
 
     const req = scheduleSend(draft.id, draft, undoSendSeconds, async () => {
       // In real backend: hand to SMTP/JMAP layer.
       playSound('send', get().prefs.soundPack);
-      get().showToast('Envoyé');
+      get().showToast(`Envoyé${attSuffix}`);
     });
     req.promise.catch(() => {
       /* user cancelled, already toasted */

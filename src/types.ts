@@ -151,6 +151,21 @@ export interface Draft {
   body: string;
   inReplyTo?: MailId;
   updatedAt: string;
+  attachments: AttachmentDraft[];
+}
+
+/**
+ * Attachment as held by the Composer before sending. The data URL is kept in
+ * memory only; once the mail is sent (V0.3), the file content is uploaded to
+ * the SMTP layer and the data URL is dropped.
+ */
+export interface AttachmentDraft {
+  id: string;
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+  /** Optional data URL for image previews. Not stored persistently. */
+  dataUrl?: string | undefined;
 }
 
 export interface PendingSend {

@@ -9,7 +9,7 @@
 //  - Hover-revealed actions: archive, snooze, star, reply.
 //  - Time-of-day greeting in the header for ambient warmth.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useStore } from '@/lib/store';
 import { Avatar } from './Avatar';
@@ -111,6 +111,44 @@ export function AtelierView() {
   const totalShown = (hero ? 1 : 0) + clusters.reduce((s, c) => s + c.mails.length, 0);
   const accountName = accounts[0]?.displayName?.split(/\s+/)[0] ?? '';
 
+  // Keyboard navigation: j/k cycle the focused card; Enter expands it.
+  const orderedMails: Mail[] = useMemo(() => {
+    const flat: Mail[] = [];
+    if (hero) flat.push(hero);
+    for (const c of clusters) flat.push(...c.mails);
+    return flat;
+  }, [hero, clusters]);
+  const [focusIdx, setFocusIdx] = useState(-1);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (orderedMails.length === 0) return;
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusIdx((i) => Math.min(orderedMails.length - 1, i + 1));
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusIdx((i) => Math.max(0, i - 1));
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [orderedMails.length]);
+
+  // Scroll the focused card into view + apply a visual ring.
+  const cardRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  useEffect(() => {
+    const m = orderedMails[focusIdx];
+    if (!m) return;
+    const el = cardRefs.current[m.id];
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [focusIdx, orderedMails]);
+
+  const focusedId = orderedMails[focusIdx]?.id;
+
   return (
     <div className="flex-1 overflow-y-auto bg-bg">
       <div className="max-w-5xl mx-auto px-6 py-10">
@@ -129,7 +167,13 @@ export function AtelierView() {
         {hero && <HeroCard mail={hero} />}
 
         {clusters.map((c) => (
-          <Cluster key={c.category} category={c.category} mails={c.mails} />
+          <Cluster
+            key={c.category}
+            category={c.category}
+            mails={c.mails}
+            focusedId={focusedId}
+            cardRefs={cardRefs}
+          />
         ))}
 
         {totalShown === 0 && <EmptyState />}
@@ -215,7 +259,17 @@ function HeroCard({ mail }: { mail: Mail }) {
   );
 }
 
-function Cluster({ category, mails }: { category: Category; mails: Mail[] }) {
+function Cluster({
+  category,
+  mails,
+  focusedId,
+  cardRefs,
+}: {
+  category: Category;
+  mails: Mail[];
+  focusedId?: string | undefined;
+  cardRefs: React.MutableRefObject<Record<string, HTMLLIElement | null>>;
+}) {
   const meta = CATEGORY_META[category];
   return (
     <section className="mb-10">
@@ -228,14 +282,27 @@ function Cluster({ category, mails }: { category: Category; mails: Mail[] }) {
       </header>
       <ul className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {mails.map((m) => (
-          <Card key={m.id} mail={m} />
+          <Card
+            key={m.id}
+            mail={m}
+            focused={focusedId === m.id}
+            cardRefs={cardRefs}
+          />
         ))}
       </ul>
     </section>
   );
 }
 
-function Card({ mail }: { mail: Mail }) {
+function Card({
+  mail,
+  focused,
+  cardRefs,
+}: {
+  mail: Mail;
+  focused: boolean;
+  cardRefs: React.MutableRefObject<Record<string, HTMLLIElement | null>>;
+}) {
   const meta = CATEGORY_META[mail.category];
   const [expanded, setExpanded] = useState(false);
   const archive = useStore((s) => s.archive);
@@ -243,10 +310,32 @@ function Card({ mail }: { mail: Mail }) {
   const toggleStar = useStore((s) => s.toggleStar);
   const openCompose = useStore((s) => s.openCompose);
 
+  // Expand the focused card on Enter at the window level (textarea-safe handled upstream).
+  useEffect(() => {
+    if (!focused) return;
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        setExpanded((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [focused]);
+
   return (
-    <li>
+    <li
+      ref={(el) => {
+        cardRefs.current[mail.id] = el;
+      }}
+    >
       <article
-        className="group relative rounded-xl border border-border p-4 transition hover:shadow-md cursor-pointer"
+        className={[
+          'group relative rounded-xl border p-4 transition hover:shadow-md cursor-pointer',
+          focused ? 'border-accent ring-2 ring-accent/40' : 'border-border',
+        ].join(' ')}
         style={{ background: meta.tint }}
         onClick={() => setExpanded((v) => !v)}
         role="button"

@@ -2,10 +2,11 @@
 // Composer modal: subject is implicit, attachments live elsewhere, just one
 // textarea + send. Useful for short answers in long threads.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
 import type { Mail } from '@/types';
 import { playSound } from '@/lib/sounds';
+import { suggestReplies } from '@/lib/replySuggestions';
 
 interface Props {
   /** The mail being replied to (last in the thread). */
@@ -21,6 +22,7 @@ export function QuickReply({ replyTo }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const account = accounts.find((a) => a.id === replyTo.accountId);
+  const suggestions = useMemo(() => suggestReplies(replyTo), [replyTo]);
 
   useEffect(() => {
     if (expanded) {
@@ -51,14 +53,40 @@ export function QuickReply({ replyTo }: Props) {
     }
   };
 
+  const sendInstant = (replyBody: string) => {
+    playSound('send', soundPack);
+    showToast(`Réponse envoyée à ${replyTo.from.name ?? replyTo.from.email}`);
+    void replyBody;
+  };
+
   if (!expanded) {
     return (
-      <button
-        onClick={() => setExpanded(true)}
-        className="mt-6 w-full px-4 py-3 rounded border border-border bg-bg text-left text-sm text-muted hover:border-accent hover:text-text transition print-hide"
-      >
-        Répondre à {replyTo.from.name ?? replyTo.from.email}…
-      </button>
+      <div className="mt-6 print-hide">
+        <button
+          onClick={() => setExpanded(true)}
+          className="w-full px-4 py-3 rounded border border-border bg-bg text-left text-sm text-muted hover:border-accent hover:text-text transition"
+        >
+          Répondre à {replyTo.from.name ?? replyTo.from.email}…
+        </button>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {suggestions.map((s) => (
+            <button
+              key={s.label}
+              onClick={() => sendInstant(s.body)}
+              className="px-3 py-1 text-xs rounded-full border border-border bg-bg hover:border-accent hover:text-accent transition"
+              title={s.body}
+            >
+              {s.label}
+            </button>
+          ))}
+          <button
+            onClick={() => setExpanded(true)}
+            className="px-3 py-1 text-xs rounded-full text-muted hover:text-text"
+          >
+            Personnaliser…
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -78,6 +106,20 @@ export function QuickReply({ replyTo }: Props) {
           ✕
         </button>
       </header>
+      {body.length === 0 && suggestions.length > 0 && (
+        <div className="px-3 pt-2 flex flex-wrap gap-1.5">
+          {suggestions.map((s) => (
+            <button
+              key={s.label}
+              onClick={() => setBody(s.body)}
+              className="px-2.5 py-0.5 text-[11px] rounded-full border border-border hover:border-accent hover:text-accent transition"
+              title={s.body}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      )}
       <textarea
         ref={textareaRef}
         value={body}

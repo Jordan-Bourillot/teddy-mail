@@ -133,6 +133,15 @@ export interface UserPreferences {
   soundPack: 'off' | 'subtle' | 'crisp';
   /** UI layout. 'classic' = 3 panes. 'atelier' = editorial single-pane. */
   viewMode: 'classic' | 'atelier';
+  /** Vacation auto-responder. */
+  vacation?: {
+    enabled: boolean;
+    subject: string;
+    body: string;
+    /** ISO date strings, both inclusive. */
+    from?: string;
+    until?: string;
+  };
 }
 
 export type SwipeAction = 'archive' | 'delete' | 'snooze' | 'star' | 'markRead';

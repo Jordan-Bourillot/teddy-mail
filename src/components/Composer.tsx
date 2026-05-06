@@ -31,6 +31,7 @@ export function Composer() {
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const lastSavedAtRef = useRef<string>('');
   const [dragActive, setDragActive] = useState(false);
+  const [minimized, setMinimized] = useState(false);
 
   type FormatAction = 'bold' | 'italic' | 'code' | 'link' | 'ul' | 'ol' | 'quote';
   const applyFormat = (action: FormatAction) => {
@@ -174,7 +175,8 @@ export function Composer() {
     <div
       ref={dropZoneRef}
       className={[
-        'fixed bottom-4 right-4 w-[640px] max-w-[calc(100vw-2rem)] h-[560px] bg-surface border rounded-lg shadow-2xl flex flex-col z-30 transition',
+        'fixed bottom-4 right-4 w-[640px] max-w-[calc(100vw-2rem)] bg-surface border rounded-lg shadow-2xl flex flex-col z-30 transition-all',
+        minimized ? 'h-auto' : 'h-[560px]',
         dragActive ? 'border-accent ring-2 ring-accent/40' : 'border-border',
       ].join(' ')}
       onDragOver={(e) => {
@@ -205,11 +207,36 @@ export function Composer() {
           </div>
         </div>
       )}
-      <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-surface-2 rounded-t-lg">
-        <div className="text-sm font-medium">Nouveau message</div>
+      <header
+        className="flex items-center justify-between px-4 py-2 border-b border-border bg-surface-2 rounded-t-lg cursor-pointer select-none"
+        onClick={() => minimized && setMinimized(false)}
+        title={minimized ? 'Cliquer pour agrandir' : ''}
+      >
+        <div className="text-sm font-medium truncate flex-1">
+          {minimized && draft.subject.trim() ? draft.subject : 'Nouveau message'}
+          {minimized && draft.to[0] && (
+            <span className="text-muted font-normal text-xs ml-2">
+              · à {draft.to[0].email}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-1 text-muted">
           <button
-            onClick={close}
+            onClick={(e) => {
+              e.stopPropagation();
+              setMinimized((v) => !v);
+            }}
+            aria-label={minimized ? 'Agrandir' : 'Réduire'}
+            className="px-2 py-1 text-sm rounded hover:bg-surface transition"
+            title={minimized ? 'Agrandir' : 'Réduire'}
+          >
+            {minimized ? '▴' : '—'}
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              close();
+            }}
             aria-label="Fermer"
             className="px-2 py-1 text-sm rounded hover:bg-surface transition"
           >
@@ -217,6 +244,8 @@ export function Composer() {
           </button>
         </div>
       </header>
+      {minimized ? null : (
+        <>
 
       <div className="px-4 py-2 border-b border-border space-y-1.5 text-sm">
         <FieldRow label="De">
@@ -438,6 +467,8 @@ export function Composer() {
           )}
         </div>
       </footer>
+        </>
+      )}
       <TemplatePicker onPick={insertTemplateBody} />
     </div>
   );

@@ -170,6 +170,10 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
             </Row>
           </Section>
 
+          <Section title="Réponse automatique (absence)">
+            <VacationSettings />
+          </Section>
+
           <Section title="Mouvement et son">
             <Row label="Animations">
               <select
@@ -230,6 +234,75 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
     <div className="flex items-center gap-4">
       <span className="w-40 shrink-0 text-sm text-muted">{label}</span>
       <div className="flex-1 flex items-center">{children}</div>
+    </div>
+  );
+}
+
+function VacationSettings() {
+  const vacation = useStore((s) => s.prefs.vacation);
+  const update = useStore((s) => s.updatePrefs);
+  const enabled = vacation?.enabled ?? false;
+
+  const setVal = (patch: Partial<NonNullable<typeof vacation>>) => {
+    const next = {
+      enabled: vacation?.enabled ?? false,
+      subject: vacation?.subject ?? 'Absent du bureau',
+      body:
+        vacation?.body ??
+        "Bonjour,\n\nJe suis actuellement absent et je consulterai mes mails à mon retour.\n\nMerci de votre compréhension.",
+      ...(vacation?.from ? { from: vacation.from } : {}),
+      ...(vacation?.until ? { until: vacation.until } : {}),
+      ...patch,
+    };
+    update({ vacation: next });
+  };
+
+  return (
+    <div className="space-y-3">
+      <Toggle
+        label="Activer la réponse automatique"
+        hint="Un mail automatique est envoyé à chaque expéditeur (une seule fois par expéditeur) pendant la période choisie."
+        checked={enabled}
+        onChange={(v) => setVal({ enabled: v })}
+      />
+      {enabled && (
+        <>
+          <Row label="Du">
+            <input
+              type="date"
+              value={(vacation?.from ?? '').slice(0, 10)}
+              onChange={(e) => setVal({ from: new Date(e.target.value).toISOString() })}
+              className="bg-surface-2 px-2 py-1 rounded border border-border text-sm"
+            />
+            <span className="mx-2 text-muted">au</span>
+            <input
+              type="date"
+              value={(vacation?.until ?? '').slice(0, 10)}
+              onChange={(e) => setVal({ until: new Date(e.target.value).toISOString() })}
+              className="bg-surface-2 px-2 py-1 rounded border border-border text-sm"
+            />
+          </Row>
+          <Row label="Sujet">
+            <input
+              type="text"
+              value={vacation?.subject ?? ''}
+              onChange={(e) => setVal({ subject: e.target.value })}
+              className="flex-1 px-3 py-1.5 rounded border border-border bg-bg text-sm outline-none focus:border-accent"
+            />
+          </Row>
+          <Row label="Message">
+            <textarea
+              value={vacation?.body ?? ''}
+              onChange={(e) => setVal({ body: e.target.value })}
+              rows={5}
+              className="flex-1 px-3 py-1.5 rounded border border-border bg-bg text-sm outline-none focus:border-accent resize-y font-sans"
+            />
+          </Row>
+          <div className="text-xs text-muted ml-44">
+            Variables disponibles : <code>{'{{date_retour}}'}</code> sera remplacé par la date « du… » côté serveur (V0.5).
+          </div>
+        </>
+      )}
     </div>
   );
 }

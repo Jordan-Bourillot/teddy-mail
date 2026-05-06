@@ -3,6 +3,14 @@ import { useStore } from '@/lib/store';
 export function StatusBar() {
   const pending = useStore((s) => s.pendingSends.length);
   const focusMode = useStore((s) => s.focusMode);
+  const vacation = useStore((s) => s.prefs.vacation);
+  const vacationActive = (() => {
+    if (!vacation?.enabled) return false;
+    const now = Date.now();
+    if (vacation.from && new Date(vacation.from).getTime() > now) return false;
+    if (vacation.until && new Date(vacation.until).getTime() + 86_400_000 < now) return false;
+    return true;
+  })();
   const totalMails = useStore((s) => s.mails.length);
   const totalTrackers = useStore((s) =>
     s.mails.reduce((sum, m) => sum + m.trackersBlocked, 0),
@@ -23,6 +31,11 @@ export function StatusBar() {
           </span>
         )}
         {focusMode && <span className="text-accent">Mode focus</span>}
+        {vacationActive && (
+          <span className="text-warning" title="Réponse automatique d'absence active">
+            🌴 Absence
+          </span>
+        )}
       </div>
       <div className="flex items-center gap-4">
         <span>{totalMails} mails locaux</span>

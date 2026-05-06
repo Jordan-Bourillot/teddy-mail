@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { useShallow } from 'zustand/react/shallow';
 import { useStore } from '@/lib/store';
+import { renderMarkdown } from '@/lib/markdown';
 import { Avatar } from './Avatar';
 import { snoozePresets } from '@/lib/snooze';
 import { neutralizeTrackers } from '@/lib/trackers';
@@ -175,6 +176,23 @@ function SnoozeMenu({ onPick, onClose }: { onPick: (iso: string) => void; onClos
   );
 }
 
+function PlainBodyMarkdown({ body }: { body: string }) {
+  const html = useMemo(() => {
+    const raw = renderMarkdown(body);
+    return DOMPurify.sanitize(raw, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'code', 'a', 'ul', 'ol', 'li', 'blockquote'],
+      ALLOWED_ATTR: ['href', 'rel', 'target'],
+    });
+  }, [body]);
+  return (
+    <div
+      className="text-[15px] leading-relaxed font-sans [&_p]:my-2 [&_ul]:my-2 [&_ol]:my-2 [&_li]:ml-4 [&_ul]:list-disc [&_ol]:list-decimal [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-3 [&_blockquote]:text-muted [&_blockquote]:my-2 [&_a]:text-accent [&_a]:underline [&_code]:font-mono [&_code]:text-[0.9em] [&_code]:bg-surface-2 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded"
+      // eslint-disable-next-line react/no-danger
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
 function toLocalInputValue(d: Date): string {
   // datetime-local expects "YYYY-MM-DDTHH:MM" in local TZ.
   const pad = (n: number) => n.toString().padStart(2, '0');
@@ -229,7 +247,7 @@ function SingleMail({
           dangerouslySetInnerHTML={{ __html: safeHtml }}
         />
       ) : (
-        <pre className="whitespace-pre-wrap font-sans text-[15px] leading-relaxed">{mail.bodyText}</pre>
+        <PlainBodyMarkdown body={mail.bodyText} />
       )}
 
       {mail.attachments.length > 0 && (

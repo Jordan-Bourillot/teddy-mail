@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { fileToAttachment, validateAttachment, formatSize, attachmentGlyph } from '@/lib/attachments';
+import { toggleWrap, toggleLinePrefix, insertLink } from '@/lib/markdown';
 
 export function Composer() {
   const open = useStore((s) => s.composeOpen);
@@ -17,8 +18,50 @@ export function Composer() {
   const subjectRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
   const lastSavedAtRef = useRef<string>('');
   const [dragActive, setDragActive] = useState(false);
+
+  type FormatAction = 'bold' | 'italic' | 'code' | 'link' | 'ul' | 'ol' | 'quote';
+  const applyFormat = (action: FormatAction) => {
+    const ta = bodyRef.current;
+    if (!ta) return;
+    const text = ta.value;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    let patch;
+    switch (action) {
+      case 'bold':
+        patch = toggleWrap(text, start, end, '**', '**');
+        break;
+      case 'italic':
+        patch = toggleWrap(text, start, end, '_', '_');
+        break;
+      case 'code':
+        patch = toggleWrap(text, start, end, '`', '`');
+        break;
+      case 'ul':
+        patch = toggleLinePrefix(text, start, end, '- ');
+        break;
+      case 'ol':
+        patch = toggleLinePrefix(text, start, end, '1. ');
+        break;
+      case 'quote':
+        patch = toggleLinePrefix(text, start, end, '> ');
+        break;
+      case 'link': {
+        const url = window.prompt('URL du lien', 'https://');
+        if (!url || url === 'https://') return;
+        patch = insertLink(text, start, end, url);
+        break;
+      }
+    }
+    update({ body: patch.text });
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(patch.selectionStart, patch.selectionEnd);
+    });
+  };
 
   useEffect(() => {
     if (open && draft) {
@@ -38,9 +81,23 @@ export function Composer() {
         e.preventDefault();
         send();
       }
+      // Markdown shortcuts only fire when the body textarea has focus.
+      const target = e.target as HTMLElement | null;
+      if (target !== bodyRef.current) return;
+      if (mod && !e.shiftKey && (e.key === 'b' || e.key === 'B')) {
+        e.preventDefault();
+        applyFormat('bold');
+      } else if (mod && !e.shiftKey && (e.key === 'i' || e.key === 'I')) {
+        e.preventDefault();
+        applyFormat('italic');
+      } else if (mod && !e.shiftKey && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        applyFormat('link');
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, close, send]);
 
   if (!open || !draft) return null;
@@ -163,11 +220,24 @@ export function Composer() {
         </FieldRow>
       </div>
 
+      <div className="flex items-center gap-0.5 px-2 py-1 border-b border-border bg-bg/50">
+        <ToolbarButton onClick={() => applyFormat('bold')} title="Gras (⌘B)" label="B" bold />
+        <ToolbarButton onClick={() => applyFormat('italic')} title="Italique (⌘I)" label="I" italic />
+        <ToolbarButton onClick={() => applyFormat('code')} title="Code" label="</>" mono />
+        <Sep />
+        <ToolbarButton onClick={() => applyFormat('ul')} title="Liste à puces" label="•—" />
+        <ToolbarButton onClick={() => applyFormat('ol')} title="Liste numérotée" label="1." />
+        <ToolbarButton onClick={() => applyFormat('quote')} title="Citation" label="❝" />
+        <Sep />
+        <ToolbarButton onClick={() => applyFormat('link')} title="Lien (⌘K)" label="🔗" />
+        <span className="ml-auto text-[10px] text-muted px-2">Markdown</span>
+      </div>
       <textarea
+        ref={bodyRef}
         value={draft.body}
         onChange={(e) => update({ body: e.target.value })}
         className="flex-1 px-4 py-3 bg-transparent outline-none resize-none text-[15px] leading-relaxed font-sans"
-        placeholder="Écris ton message…"
+        placeholder="Écris ton message…    **gras**    _italique_    `code`    [lien](url)    - liste"
       />
 
       {hasAttachments && (
@@ -268,4 +338,41 @@ function FieldRow({ label, children }: { label: string; children: React.ReactNod
       <div className="flex-1 min-w-0">{children}</div>
     </div>
   );
+}
+
+function ToolbarButton({
+  onClick,
+  title,
+  label,
+  bold,
+  italic,
+  mono,
+}: {
+  onClick: () => void;
+  title: string;
+  label: string;
+  bold?: boolean;
+  italic?: boolean;
+  mono?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      className={[
+        'w-7 h-7 rounded text-xs flex items-center justify-center hover:bg-surface-2 transition',
+        bold ? 'font-bold' : '',
+        italic ? 'italic' : '',
+        mono ? 'font-mono' : '',
+      ].join(' ')}
+    >
+      {label}
+    </button>
+  );
+}
+
+function Sep() {
+  return <div className="w-px h-5 bg-border mx-1" />;
 }

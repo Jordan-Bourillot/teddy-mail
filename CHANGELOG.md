@@ -5,6 +5,45 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning [Se
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-05-06
+
+Big feature drop: writing experience.
+
+### Added
+
+#### Composer
+- **Markdown toolbar** with B / I / `</>` / list / ordered list / blockquote / link buttons. Cmd+B / Cmd+I / Cmd+K shortcuts.
+- **Templates / canned responses**: 3 defaults (dispo, merci, relance), full CRUD via Settings → Modèles. Cmd+/ opens the picker. Variable expansion ({{first_name}}, {{my_name}}, {{my_email}}, {{date}}, {{time}}).
+- **Slash command auto-expand**: typing `/dispo ` (slash + shortcut + space) expands inline with variables substituted.
+- **Drag-and-drop attachments** anywhere on the compose window, with image previews, 25 MB per file / 50 MB per mail validation.
+- **Auto-save during typing** (debounced 2s). Footer shows green dot + "Sauvegardé HH:MM:SS".
+- **Schedule send**: split button ▾ with presets (demain 9h, lundi 8h, +2h) + custom datetime picker. Persistent queue, mock dispatcher fires when time comes.
+- **Writing stats** in footer: word count + estimated reading time at 220 wpm.
+
+#### Inbox
+- **Drafts panel** in sidebar with count badge. List sorted by recency, click to resume, hover to delete.
+- **Scheduled panel** in sidebar with count badge. Lists pending sends with countdown.
+- **Print mail** (🖨 button + Cmd+P) with print-friendly CSS that hides chrome.
+
+#### Reader
+- **Markdown rendering** for received plain-text mails (lists, bold, italic, links auto-expanded). Sanitized via DOMPurify, URL allowlist (http/https/mailto only).
+
+#### Keyboard
+- **Gmail-style g+key navigation**: g d → Drafts, g s → Scheduled, g i → Insights, g a → Accounts, g n → Add account.
+- All new shortcuts listed in the cheat sheet (?).
+
+### Changed
+- Default keyboard profile renamed pite → teddy (consistency with the rebrand).
+- closeCompose toast: "Brouillon enregistré" instead of silent.
+
+### Quality
+- TypeScript strict throughout
+- **111 tests** passing (added: markdown × 14, attachments × 11, templates × 14, drafts × 6, textStats × 7)
+
+### Migration
+- Auto-update from v0.2.x: just click "Installer" when the banner pops up.
+- Existing localStorage keys (prefs, accounts, drafts, scheduled, templates) all use versioned suffixes.
+
 ## [0.2.1] — 2026-05-06
 
 ### Added

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { themeOptions, densityOptions } from '@/lib/themes';
+import { playSound } from '@/lib/sounds';
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
@@ -175,7 +176,7 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
                       update({ soundPack: s });
                       // Quick preview
                       if (s !== 'off') {
-                        import('@/lib/sounds').then((m) => m.playSound('send', s));
+                        playSound('send', s);
                       }
                     }}
                     className={[

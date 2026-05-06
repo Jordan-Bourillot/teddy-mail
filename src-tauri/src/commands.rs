@@ -1,19 +1,11 @@
-//! Tauri command handlers.
+//! Tauri command handlers (V0.1.0 — UI-only build).
 //!
-//! Thin wrappers around `pite_lafe_core` that map errors to strings (Tauri
-//! requires `Serialize` errors).
+//! These commands answer the IPC calls the React UI makes. In V0.1.0 the
+//! mail backend isn't connected, so commands either return safe defaults (no
+//! accounts, store closed) or run the OAuth URL builder, which is pure logic
+//! that doesn't need rust-core.
 
-use crate::AppState;
-use pite_lafe_core::{auth, parser::ParsedMail, smtp};
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
-use std::sync::Arc;
-use tauri::State;
-use tokio::sync::Mutex;
-
-fn map_err<E: std::fmt::Display>(e: E) -> String {
-    e.to_string()
-}
 
 #[tauri::command]
 pub fn greet() -> String {
@@ -21,76 +13,54 @@ pub fn greet() -> String {
 }
 
 #[tauri::command]
-pub async fn open_store(
-    state: State<'_, AppState>,
-    path: String,
-    passphrase: String,
-) -> Result<(), String> {
-    let store =
-        pite_lafe_core::store::Store::open(&PathBuf::from(path), &passphrase).map_err(map_err)?;
-    let mut guard = state.store.lock().await;
-    *guard = Some(Arc::new(Mutex::new(store)));
-    Ok(())
+pub fn is_store_open() -> bool {
+    false
+}
+
+#[derive(Debug, Serialize)]
+pub struct AccountSummary {
+    pub id: String,
+    pub email: String,
+    pub provider: String,
 }
 
 #[tauri::command]
-pub async fn is_store_open(state: State<'_, AppState>) -> Result<bool, String> {
-    let guard = state.store.lock().await;
-    Ok(guard.is_some())
+pub fn list_accounts() -> Vec<AccountSummary> {
+    Vec::new()
+}
+
+const NOT_YET: &str = "Mail backend not yet integrated in V0.1.0 — coming in V0.2";
+
+#[tauri::command]
+pub fn open_store(_path: String, _passphrase: String) -> Result<(), String> {
+    Err(NOT_YET.into())
 }
 
 #[tauri::command]
-pub async fn search(
-    state: State<'_, AppState>,
-    query: String,
-    limit: usize,
-) -> Result<Vec<String>, String> {
-    let guard = state.store.lock().await;
-    let store = guard.as_ref().ok_or_else(|| "store not open".to_string())?;
-    let s = store.lock().await;
-    s.search(&query, limit).map_err(map_err)
+pub fn search(_query: String, _limit: usize) -> Result<Vec<String>, String> {
+    Err(NOT_YET.into())
 }
 
 #[tauri::command]
-pub async fn mark_read(
-    state: State<'_, AppState>,
-    mail_id: String,
-    read: bool,
-) -> Result<(), String> {
-    let guard = state.store.lock().await;
-    let store = guard.as_ref().ok_or_else(|| "store not open".to_string())?;
-    let s = store.lock().await;
-    s.mark_read(&mail_id, read).map_err(map_err)
+pub fn mark_read(_mail_id: String, _read: bool) -> Result<(), String> {
+    Err(NOT_YET.into())
 }
 
 #[tauri::command]
-pub async fn snooze(
-    state: State<'_, AppState>,
-    mail_id: String,
-    until_unix: i64,
-) -> Result<(), String> {
-    let guard = state.store.lock().await;
-    let store = guard.as_ref().ok_or_else(|| "store not open".to_string())?;
-    let s = store.lock().await;
-    s.snooze(&mail_id, until_unix).map_err(map_err)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SendArgs {
-    pub config: smtp::SmtpConfig,
-    pub mail: smtp::OutgoingMail,
+pub fn snooze(_mail_id: String, _until_unix: i64) -> Result<(), String> {
+    Err(NOT_YET.into())
 }
 
 #[tauri::command]
-pub async fn send_mail(args: SendArgs) -> Result<(), String> {
-    smtp::send(&args.config, &args.mail).await.map_err(map_err)
+pub fn send_mail(_args: serde_json::Value) -> Result<(), String> {
+    Err(NOT_YET.into())
 }
 
 // ---------------- OAuth ----------------
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OAuthStartArgs {
-    pub provider: String, // "gmail" | "outlook" | "icloud"
+    pub provider: String,
     pub client_id: String,
     pub redirect_uri: String,
 }
@@ -102,8 +72,7 @@ pub struct OAuthStartResult {
     pub code_verifier: String,
 }
 
-/// Build a PKCE auth URL. The UI opens it in the system browser via the
-/// `tauri-plugin-shell` plugin and waits for the redirect.
+/// Build a PKCE auth URL. Pure logic, no backend store needed.
 #[tauri::command]
 pub fn start_oauth(args: OAuthStartArgs) -> Result<OAuthStartResult, String> {
     use sha2::{Digest, Sha256};
@@ -126,7 +95,7 @@ pub fn start_oauth(args: OAuthStartArgs) -> Result<OAuthStartResult, String> {
     hasher.update(code_verifier.as_bytes());
     let code_challenge = b64url_encode(&hasher.finalize());
 
-    let mut url = url::Url::parse(auth_endpoint).map_err(map_err)?;
+    let mut url = url::Url::parse(auth_endpoint).map_err(|e| e.to_string())?;
     {
         let mut qs = url.query_pairs_mut();
         qs.append_pair("client_id", &args.client_id);
@@ -157,6 +126,9 @@ pub struct OAuthCompleteArgs {
     pub account_id: String,
 }
 
+/// Exchange the authorization code for tokens. The tokens would be persisted
+/// via the rust-core keyring helper in V0.2; for V0.1.0 we just verify the
+/// exchange succeeds and let the UI know.
 #[tauri::command]
 pub async fn complete_oauth(args: OAuthCompleteArgs) -> Result<(), String> {
     let token_endpoint = match args.provider.as_str() {
@@ -177,46 +149,14 @@ pub async fn complete_oauth(args: OAuthCompleteArgs) -> Result<(), String> {
         ])
         .send()
         .await
-        .map_err(map_err)?;
+        .map_err(|e| e.to_string())?;
 
-    let json: serde_json::Value = resp.json().await.map_err(map_err)?;
-    let access = json
-        .get("access_token")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| format!("token response missing access_token: {json}"))?
-        .to_string();
-    let refresh = json
-        .get("refresh_token")
-        .and_then(|v| v.as_str())
-        .map(|s| s.to_string());
-    let expires_in = json.get("expires_in").and_then(|v| v.as_i64()).unwrap_or(3600);
-
-    let tokens = auth::OAuthTokens {
-        access_token: access,
-        refresh_token: refresh,
-        expires_at_unix: chrono::Utc::now().timestamp() + expires_in,
-    };
-    auth::save_tokens(&args.account_id, &tokens).map_err(map_err)?;
+    let json: serde_json::Value = resp.json().await.map_err(|e| e.to_string())?;
+    if json.get("access_token").and_then(|v| v.as_str()).is_none() {
+        return Err(format!("token response missing access_token: {json}"));
+    }
+    tracing::info!(account = %args.account_id, "OAuth completed; token persistence in V0.2");
     Ok(())
-}
-
-#[derive(Debug, Serialize)]
-pub struct AccountSummary {
-    pub id: String,
-    pub email: String,
-    pub provider: String,
-}
-
-#[tauri::command]
-pub fn list_accounts() -> Vec<AccountSummary> {
-    // V1: stored in keyring/config; for now return empty so the UI knows
-    // there are no real accounts yet and falls back to mock data.
-    Vec::new()
-}
-
-#[tauri::command]
-pub async fn parse_raw(raw: Vec<u8>) -> Result<ParsedMail, String> {
-    pite_lafe_core::parser::parse(&raw).map_err(map_err)
 }
 
 // ---------------- helpers ----------------
@@ -232,10 +172,3 @@ fn b64url_encode(input: &[u8]) -> String {
     use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
     URL_SAFE_NO_PAD.encode(input)
 }
-
-// Bring in deps used in this file
-use sha2 as _;
-use rand as _;
-use base64 as _;
-use reqwest as _;
-use chrono as _;

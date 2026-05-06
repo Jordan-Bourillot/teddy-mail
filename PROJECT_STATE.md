@@ -1,6 +1,17 @@
 # PROJECT_STATE — Pite Lafe Mail
 
-État courant : **V1 web complet + scaffold Tauri/OAuth + Insights + multi-select + cheat sheet + responsive mobile.**
+État courant : **V0.1.0 — desktop shell construit (.exe Windows), backend mail décorrelé pour V0.2.**
+
+## Pipeline V0.1.0 réalisé
+
+- ✅ Repo GitHub public : https://github.com/Jordan-Bourillot/pite-lafe-mail
+- ✅ Toolchain installée : Rust 1.95, VS Build Tools 2022, Windows SDK 10/11, Strawberry Perl
+- ✅ React UI complet packagé (`npm run build` → 360 ko gzippé 112 ko)
+- ✅ Shell Tauri 2 compilé en release (Windows x64)
+- ✅ Installeurs générés : `.exe` (NSIS) + `.msi` (WiX)
+- ✅ Workflow GitHub Actions pour CI + release cross-OS sur push de tag
+- ✅ rust-core : 16 erreurs d'API-drift détectées (futures/tokio compat principalement). Décorrelé de src-tauri pour V0.1.0, traitement reporté en V0.2.
+
 
 ## Étapes terminées
 

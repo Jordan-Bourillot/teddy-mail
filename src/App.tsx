@@ -12,6 +12,7 @@ import { Toast } from './components/Toast';
 import { CheatSheet } from './components/CheatSheet';
 import { UpdateChecker } from './components/UpdateChecker';
 import { ScheduledSendDispatcher } from './components/ScheduledSendDispatcher';
+import { NewMailSimulator } from './components/NewMailSimulator';
 import { SettingsButton } from './components/SettingsPanel';
 import { applyTheme } from '@/lib/themes';
 import { applyReducedMotion } from '@/lib/sounds';
@@ -153,6 +154,12 @@ export function App() {
           e.preventDefault();
           const ids = useStore.getState().threadMails(selectedThreadId).map((m) => m.id);
           trash(ids);
+          return;
+        }
+        if (matches(e, profile.replyAll)) {
+          e.preventDefault();
+          const last = useStore.getState().threadMails(selectedThreadId).slice(-1)[0];
+          if (last) useStore.getState().openReplyAll(last);
           return;
         }
         if (matches(e, profile.reply)) {
@@ -301,6 +308,7 @@ export function App() {
       <CheatSheet />
       <UpdateChecker />
       <ScheduledSendDispatcher />
+      <NewMailSimulator />
       <Toast />
       {showOnboarding && <Onboarding onDone={() => setShowOnboarding(false)} />}
     </div>

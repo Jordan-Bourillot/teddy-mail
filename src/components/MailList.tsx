@@ -15,6 +15,7 @@ export function MailList() {
   const saveCurrentSearch = useStore((s) => s.saveCurrentSearch);
   const checked = useStore((s) => s.selectedThreadIds);
   const toggleCheck = useStore((s) => s.toggleThreadCheck);
+  const labelsList = useStore((s) => s.labels);
   const isCheckMode = checked.size > 0;
 
   return (
@@ -109,6 +110,27 @@ export function MailList() {
                   <div className="truncate text-xs text-muted mt-0.5">
                     {last.bodyText.split('\n').join(' ').slice(0, 120)}
                   </div>
+                  {(() => {
+                    const ids = Array.from(new Set(threadMails.flatMap((m) => m.labels)));
+                    if (ids.length === 0) return null;
+                    return (
+                      <div className="flex gap-1 mt-1">
+                        {ids.slice(0, 3).map((id) => {
+                          const lbl = labelsList.find((l) => l.id === id);
+                          if (!lbl) return null;
+                          return (
+                            <span
+                              key={id}
+                              className="text-[10px] px-1.5 py-0.5 rounded text-white"
+                              style={{ background: lbl.color }}
+                            >
+                              {lbl.name}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                   <MailBadges
                     starred={threadMails.some((m) => m.starred)}
                     trackers={threadMails.reduce((sum, m) => sum + m.trackersBlocked, 0)}

@@ -101,13 +101,7 @@ export function Sidebar() {
 
         <SidebarSection label="Vues sauvegardées" />
         {savedViews.map((v) => (
-          <SidebarItem
-            key={v.id}
-            label={v.name}
-            count={undefined}
-            active={false}
-            onClick={() => setSearch(v.query)}
-          />
+          <SavedViewRow key={v.id} view={v} />
         ))}
 
         {accounts.map((a) => (
@@ -205,6 +199,52 @@ function SidebarSection({ label, swatch }: { label: string; swatch?: string }) {
     <div className="flex items-center gap-2 px-2 mt-3 mb-1 text-[11px] uppercase tracking-wider text-muted">
       {swatch && <span className="inline-block w-2 h-2 rounded-full" style={{ background: swatch }} />}
       <span className="truncate">{label}</span>
+    </div>
+  );
+}
+
+function SavedViewRow({ view }: { view: { id: string; name: string; query: string } }) {
+  const setSearch = useStore((s) => s.setSearchQuery);
+  const rename = useStore((s) => s.renameSavedView);
+  const remove = useStore((s) => s.deleteSavedView);
+
+  const onRename = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = window.prompt('Nouveau nom de la vue', view.name);
+    if (next?.trim()) rename(view.id, next.trim());
+  };
+  const onDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm(`Supprimer la vue « ${view.name} » ?`)) remove(view.id);
+  };
+
+  return (
+    <div className="group relative">
+      <button
+        type="button"
+        onClick={() => setSearch(view.query)}
+        className="w-full flex items-center justify-between px-2 py-1.5 rounded text-left text-muted hover:bg-surface-2 hover:text-text transition"
+      >
+        <span className="truncate">{view.name}</span>
+      </button>
+      <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition flex gap-0.5 bg-surface-2 rounded">
+        <button
+          onClick={onRename}
+          className="px-1.5 text-xs hover:text-accent"
+          title="Renommer"
+          aria-label={`Renommer la vue ${view.name}`}
+        >
+          ✎
+        </button>
+        <button
+          onClick={onDelete}
+          className="px-1.5 text-xs hover:text-danger"
+          title="Supprimer"
+          aria-label={`Supprimer la vue ${view.name}`}
+        >
+          ✕
+        </button>
+      </div>
     </div>
   );
 }

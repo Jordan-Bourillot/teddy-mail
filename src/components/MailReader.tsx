@@ -6,6 +6,7 @@ import { renderMarkdown } from '@/lib/markdown';
 import { Avatar } from './Avatar';
 import { QuickReply } from './QuickReply';
 import { FindInMail } from './FindInMail';
+import { LabelPicker } from './LabelPicker';
 import { snoozePresets } from '@/lib/snooze';
 import { neutralizeTrackers } from '@/lib/trackers';
 import { format } from 'date-fns';
@@ -19,6 +20,7 @@ export function MailReader() {
   const toggleStar = useStore((s) => s.toggleStar);
   const snooze = useStore((s) => s.snooze);
   const openCompose = useStore((s) => s.openCompose);
+  const openReplyAll = useStore((s) => s.openReplyAll);
   const openForward = useStore((s) => s.openForward);
   const blockTrackers = useStore((s) => s.prefs.blockTrackers);
 
@@ -58,7 +60,10 @@ export function MailReader() {
   const onArchive = () => archive(mails.map((m) => m.id));
   const onTrash = () => trash(mails.map((m) => m.id));
   const onReply = () => openCompose(last);
+  const onReplyAll = () => openReplyAll(last);
   const onForward = () => openForward(last);
+  // Show Reply All only when there's actually more than one recipient.
+  const hasMultipleRecipients = last.to.length + last.cc.length > 1;
 
   return (
     <div className="flex-1 flex flex-col bg-surface min-w-0 md:min-w-[420px] relative">
@@ -94,6 +99,7 @@ export function MailReader() {
         >
           {last.starred ? '★ Favori' : '☆ Favori'}
         </button>
+        <LabelPicker mails={mails} />
         <div className="ml-auto flex items-center gap-2">
           <button
             onClick={() => window.print()}
@@ -109,6 +115,15 @@ export function MailReader() {
           >
             Transférer
           </button>
+          {hasMultipleRecipients && (
+            <button
+              onClick={onReplyAll}
+              className="px-2.5 py-1 text-sm rounded hover:bg-surface-2 transition"
+              title="Répondre à tous (Shift+R)"
+            >
+              Répondre à tous
+            </button>
+          )}
           <button onClick={onReply} className="px-3 py-1 text-sm rounded bg-accent text-white hover:opacity-90 transition" title="Répondre (R)">
             Répondre
           </button>

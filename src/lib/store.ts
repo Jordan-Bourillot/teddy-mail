@@ -197,6 +197,14 @@ export interface AppState {
   bulkSnooze: (untilIso: string) => void;
   bulkMarkRead: (read: boolean) => void;
   saveCurrentSearch: (name: string) => void;
+  renameSavedView: (id: string, name: string) => void;
+  deleteSavedView: (id: string) => void;
+
+  // Labels
+  upsertLabel: (label: Label) => void;
+  deleteLabel: (id: string) => void;
+  toggleLabelOnMail: (mailId: string, labelId: string) => void;
+
   openCheatSheet: () => void;
   closeCheatSheet: () => void;
 
@@ -216,6 +224,7 @@ export interface AppState {
 
   // Actions: compose
   openCompose: (replyTo?: Mail) => void;
+  openReplyAll: (mail: Mail) => void;
   openForward: (mail: Mail) => void;
   closeCompose: () => void;
   autoSaveDraft: () => void;
@@ -372,6 +381,41 @@ export const useStore = create<AppState>((set, get) => ({
     get().showToast(`Vue "${name}" enregistrée`);
   },
 
+  renameSavedView: (id, name) => {
+    const next = get().savedViews.map((v) => (v.id === id ? { ...v, name } : v));
+    set({ savedViews: next });
+  },
+
+  deleteSavedView: (id) => {
+    const next = get().savedViews.filter((v) => v.id !== id);
+    set({ savedViews: next });
+    get().showToast('Vue supprimée');
+  },
+
+  upsertLabel: (label) => {
+    const others = get().labels.filter((l) => l.id !== label.id);
+    set({ labels: [...others, label] });
+  },
+
+  deleteLabel: (id) => {
+    set({
+      labels: get().labels.filter((l) => l.id !== id),
+      mails: get().mails.map((m) => ({ ...m, labels: m.labels.filter((lid) => lid !== id) })),
+    });
+  },
+
+  toggleLabelOnMail: (mailId, labelId) => {
+    const mails = get().mails.map((m) => {
+      if (m.id !== mailId) return m;
+      const has = m.labels.includes(labelId);
+      return {
+        ...m,
+        labels: has ? m.labels.filter((l) => l !== labelId) : [...m.labels, labelId],
+      };
+    });
+    set({ mails, threads: buildThreads(mails) });
+  },
+
   openCheatSheet: () => set({ cheatSheetOpen: true }),
   closeCheatSheet: () => set({ cheatSheetOpen: false }),
 
@@ -483,6 +527,37 @@ export const useStore = create<AppState>((set, get) => ({
       subject: replyTo ? (replyTo.subject.startsWith('Re:') ? replyTo.subject : `Re: ${replyTo.subject}`) : '',
       body: replyTo ? `\n\n--- Le ${new Date(replyTo.receivedAt).toLocaleString()}, ${replyTo.from.name ?? replyTo.from.email} a écrit :\n> ${replyTo.bodyText.split('\n').join('\n> ')}` : '',
       ...(replyTo ? { inReplyTo: replyTo.id } : {}),
+      updatedAt: new Date().toISOString(),
+      attachments: [],
+    };
+    set({ composeOpen: true, composeDraft: draft });
+  },
+
+  openReplyAll: (mail) => {
+    const account = get().accounts.find((a) => a.id === mail.accountId) ?? get().accounts[0];
+    if (!account) return;
+    // Build CC list: original to+cc, minus our own address (we're replying, no need to email ourselves)
+    const myEmails = get().accounts.map((a) => a.email.toLowerCase());
+    const dedupe = new Map<string, { name?: string; email: string }>();
+    for (const a of [...mail.to, ...mail.cc]) {
+      const key = a.email.toLowerCase();
+      if (myEmails.includes(key)) continue;
+      if (key === mail.from.email.toLowerCase()) continue; // already in 'to'
+      if (!dedupe.has(key)) {
+        const entry: { name?: string; email: string } = { email: a.email };
+        if (a.name !== undefined) entry.name = a.name;
+        dedupe.set(key, entry);
+      }
+    }
+    const draft: Draft = {
+      id: `draft_${Date.now()}`,
+      accountId: account.id,
+      to: [mail.from],
+      cc: Array.from(dedupe.values()),
+      bcc: [],
+      subject: mail.subject.startsWith('Re:') ? mail.subject : `Re: ${mail.subject}`,
+      body: `\n\n--- Le ${new Date(mail.receivedAt).toLocaleString()}, ${mail.from.name ?? mail.from.email} a écrit :\n> ${mail.bodyText.split('\n').join('\n> ')}`,
+      inReplyTo: mail.id,
       updatedAt: new Date().toISOString(),
       attachments: [],
     };

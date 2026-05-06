@@ -162,6 +162,18 @@ button {
   border-radius: var(--radius);
 }
 
+/* ----- Find in mail ----- */
+.teddy-find-hit {
+  background: rgb(var(--color-warning) / 0.4);
+  border-radius: 2px;
+}
+.teddy-find-hit-active {
+  background: rgb(var(--color-accent) / 0.7);
+  color: rgb(var(--color-bg));
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 1px;
+}
+
 /* ----- Print ----- */
 @media print {
   /* Hide everything except the explicitly-marked print region */

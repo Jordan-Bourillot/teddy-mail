@@ -115,6 +115,9 @@ export function MailList() {
                     attachments={threadMails.reduce((sum, m) => sum + m.attachments.length, 0)}
                     category={t.category}
                     count={threadMails.length}
+                    {...(threadMails.find((m) => m.snoozedUntil)?.snoozedUntil
+                      ? { snoozedUntil: threadMails.find((m) => m.snoozedUntil)!.snoozedUntil }
+                      : {})}
                   />
                 </div>
                 {unread && !isChecked && (
@@ -171,12 +174,14 @@ function MailBadges({
   attachments,
   category,
   count,
+  snoozedUntil,
 }: {
   starred: boolean;
   trackers: number;
   attachments: number;
   category: string;
   count: number;
+  snoozedUntil?: string | undefined;
 }) {
   return (
     <div className="flex items-center gap-2 mt-1 text-[11px] text-muted">
@@ -188,7 +193,26 @@ function MailBadges({
           ⊘ {trackers}
         </span>
       )}
+      {snoozedUntil && (() => {
+        const ms = new Date(snoozedUntil).getTime() - Date.now();
+        if (ms <= 0) return null;
+        const label = formatCountdown(ms);
+        return (
+          <span className="text-warning" aria-label={`Reporté, réveil dans ${label}`}>
+            🌙 {label}
+          </span>
+        );
+      })()}
       <span className="ml-auto text-[10px] uppercase tracking-wider opacity-70">{category}</span>
     </div>
   );
+}
+
+function formatCountdown(ms: number): string {
+  const minutes = Math.round(ms / 60000);
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} h`;
+  const days = Math.round(hours / 24);
+  return `${days} j`;
 }

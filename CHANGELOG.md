@@ -5,6 +5,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning [Se
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-05-06
+
+### Added
+- **Forward action** in MailReader (Transférer button + F shortcut) opens a fresh draft pre-filled with header block, full quoted body, and attachment metadata copied over.
+- **Quick reply inline** below the thread: lighter than the modal Composer, just a textarea with Send/Cancel. ⌘+Entrée envoie.
+- **Find in mail (Cmd+F)** : highlight bar with match counter, ↑↓/Shift+Entrée to navigate, Esc to close. Smooth scroll to active match.
+- **Snooze countdown** on snoozed thread cards: 🌙 24 min / 3 h / 2 j compact format.
+
 ## [0.3.0] — 2026-05-06
 
 Big feature drop: writing experience.

@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { useShallow } from 'zustand/react/shallow';
 import { useStore } from '@/lib/store';
 import { renderMarkdown } from '@/lib/markdown';
 import { Avatar } from './Avatar';
+import { QuickReply } from './QuickReply';
+import { FindInMail } from './FindInMail';
 import { snoozePresets } from '@/lib/snooze';
 import { neutralizeTrackers } from '@/lib/trackers';
 import { format } from 'date-fns';
@@ -17,9 +19,26 @@ export function MailReader() {
   const toggleStar = useStore((s) => s.toggleStar);
   const snooze = useStore((s) => s.snooze);
   const openCompose = useStore((s) => s.openCompose);
+  const openForward = useStore((s) => s.openForward);
   const blockTrackers = useStore((s) => s.prefs.blockTrackers);
 
   const [showSnooze, setShowSnooze] = useState(false);
+  const [showFind, setShowFind] = useState(false);
+
+  // Cmd/Ctrl+F opens the find bar (only when a thread is open)
+  useEffect(() => {
+    if (!threadId) return;
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+        const target = e.target as HTMLElement | null;
+        if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return;
+        e.preventDefault();
+        setShowFind(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [threadId]);
 
   if (!threadId || mails.length === 0) {
     return (
@@ -39,9 +58,10 @@ export function MailReader() {
   const onArchive = () => archive(mails.map((m) => m.id));
   const onTrash = () => trash(mails.map((m) => m.id));
   const onReply = () => openCompose(last);
+  const onForward = () => openForward(last);
 
   return (
-    <div className="flex-1 flex flex-col bg-surface min-w-0 md:min-w-[420px]">
+    <div className="flex-1 flex flex-col bg-surface min-w-0 md:min-w-[420px] relative">
       <header className="h-12 px-4 flex items-center gap-2 border-b border-border shrink-0 print-hide">
         <button onClick={onArchive} className="px-2.5 py-1 text-sm rounded hover:bg-surface-2 transition" title="Archiver (E)">
           Archiver
@@ -82,13 +102,25 @@ export function MailReader() {
           >
             🖨
           </button>
+          <button
+            onClick={onForward}
+            className="px-2.5 py-1 text-sm rounded hover:bg-surface-2 transition"
+            title="Transférer (F)"
+          >
+            Transférer
+          </button>
           <button onClick={onReply} className="px-3 py-1 text-sm rounded bg-accent text-white hover:opacity-90 transition" title="Répondre (R)">
             Répondre
           </button>
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto print-region">
+      <FindInMail
+        scopeSelector='[data-find-scope="reader"]'
+        open={showFind}
+        onClose={() => setShowFind(false)}
+      />
+      <div data-find-scope="reader" className="flex-1 overflow-y-auto print-region">
         <div className="max-w-3xl mx-auto px-6 py-6">
           <h1 className="text-xl font-semibold mb-3 leading-snug">{last.subject}</h1>
 
@@ -120,6 +152,8 @@ export function MailReader() {
               </ul>
             </aside>
           )}
+
+          <QuickReply replyTo={last} />
         </div>
       </div>
     </div>

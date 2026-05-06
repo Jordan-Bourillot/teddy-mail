@@ -161,6 +161,12 @@ export function App() {
           if (last) openCompose(last);
           return;
         }
+        if (matches(e, profile.forward)) {
+          e.preventDefault();
+          const last = useStore.getState().threadMails(selectedThreadId).slice(-1)[0];
+          if (last) useStore.getState().openForward(last);
+          return;
+        }
         if (matches(e, profile.star)) {
           e.preventDefault();
           const last = useStore.getState().threadMails(selectedThreadId).slice(-1)[0];

@@ -216,6 +216,7 @@ export interface AppState {
 
   // Actions: compose
   openCompose: (replyTo?: Mail) => void;
+  openForward: (mail: Mail) => void;
   closeCompose: () => void;
   autoSaveDraft: () => void;
   resumeDraft: (draftId: string) => void;
@@ -484,6 +485,39 @@ export const useStore = create<AppState>((set, get) => ({
       ...(replyTo ? { inReplyTo: replyTo.id } : {}),
       updatedAt: new Date().toISOString(),
       attachments: [],
+    };
+    set({ composeOpen: true, composeDraft: draft });
+  },
+
+  openForward: (mail) => {
+    const account = get().accounts.find((a) => a.id === mail.accountId) ?? get().accounts[0];
+    if (!account) return;
+    const headerBlock = [
+      '',
+      '',
+      '--- Message transféré ---',
+      `De : ${mail.from.name ?? ''} <${mail.from.email}>`,
+      `Date : ${new Date(mail.receivedAt).toLocaleString('fr-FR')}`,
+      `Sujet : ${mail.subject}`,
+      `À : ${mail.to.map((t) => t.email).join(', ')}`,
+      '',
+      mail.bodyText,
+    ].join('\n');
+    const draft: Draft = {
+      id: `draft_${Date.now()}`,
+      accountId: account.id,
+      to: [],
+      cc: [],
+      bcc: [],
+      subject: mail.subject.startsWith('Fwd:') ? mail.subject : `Fwd: ${mail.subject}`,
+      body: headerBlock,
+      updatedAt: new Date().toISOString(),
+      attachments: mail.attachments.map((a) => ({
+        id: `att_fwd_${a.id}`,
+        filename: a.filename,
+        mimeType: a.mimeType,
+        sizeBytes: a.sizeBytes,
+      })),
     };
     set({ composeOpen: true, composeDraft: draft });
   },
